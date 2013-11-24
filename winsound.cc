@@ -49,26 +49,20 @@ HWAVEIN hwi;
 HMIXER hmixer;
 WAVEHDR buffer[NUMBUFFERS];
 int bufcount;
-
-sampleType* lastBlock;
+LPWAVEHDR lastWaveHdr;
 HANDLE blockReadySemaphore;
 
+/* This function is only allowed to call a few functions.
+ * See documentation for waveInProc.
+ */
 void CALLBACK SoundCallback(HWAVEIN lhwi, UINT uMsg, DWORD dwInstance, DWORD dwParam1, DWORD dwParam2)
 {
   MMRESULT result;
 
   if(uMsg == WIM_DATA)
   {	      
-
-	result = waveInUnprepareHeader(lhwi,(LPWAVEHDR)dwParam1,sizeof(WAVEHDR));
-    if(result != MMSYSERR_NOERROR)
-    {
-      error("Couldn't unprepare buffer");
-      return;
-    }
-
-	lastBlock = (sampleType*) ((LPWAVEHDR)dwParam1)->lpData;
-        ReleaseSemaphore(blockReadySemaphore,1,NULL);
+    lastWaveHdr = (LPWAVEHDR)dwParam1;
+    ReleaseSemaphore(blockReadySemaphore,1,NULL);
   }
 }
 
@@ -152,7 +146,7 @@ void openSound(SoundSource source, int inFrequency, char *dspName,
   }
 
   data = (sampleType*) buffer[0].lpData;
-  lastBlock = data;
+  lastWaveHdr = NULL;
   bufcount=NUMBUFFERS-1;
 
   blockReadySemaphore = CreateSemaphore(NULL,0,NUMBUFFERS,NULL);
@@ -179,11 +173,17 @@ void closeSound()
 
 int getNextFragment(void)
 {
+  int result, i;
+
   WaitForSingleObject(blockReadySemaphore, INFINITE);
 
-  data = lastBlock;
+  result = waveInUnprepareHeader(hwi,lastWaveHdr,sizeof(WAVEHDR));
+  if(result != MMSYSERR_NOERROR)
+  {
+    error("Couldn't unprepare buffer");
+  }
 
-  int result, i;
+  data = (sampleType*) (lastWaveHdr)->lpData;
 
   i = 0;
   //do {
