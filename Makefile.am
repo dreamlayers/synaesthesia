@@ -18,3 +18,7 @@ endif
 if COMPILE_X11
 synaesthesia_SOURCES += xlibwrap.cc xlib.c
 endif
+
+if COMPILE_WINDOWS
+synaesthesia_SOURCES += winsound.cc
+endif
