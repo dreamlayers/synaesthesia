@@ -1,8 +1,18 @@
 AC_INIT([synaesthesia], [2.4])
 AC_CONFIG_SRCDIR([main.cc])
 
-dnl Detect the canonical host and target build environment
-AC_CANONICAL_SYSTEM
+dnl Detect the canonical host system
+AC_CANONICAL_HOST
+windows_host="no"
+unix_sound="no"
+case $host_os in
+  mingw*)
+    windows_host="yes"
+    ;;
+  linux* | freebsd*)
+    unix_sound="yes"
+    ;;
+esac
 
 AM_INIT_AUTOMAKE
 
@@ -15,12 +25,22 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
 
-dnl Check for X
-AC_PATH_XTRA
-if test "x$no_x" != xyes ; then  
-  CFLAGS="$CFLAGS $X_CFLAGS"
-  CXXFLAGS="$CXXFLAGS $X_CFLAGS"
-  LIBS="$LIBS $X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS -lX11"
+dnl Operating system specific Automake conditionals
+AM_CONDITIONAL([COMPILE_WINDOWS], [test "x$windows_host" = "xyes"])
+AM_CONDITIONAL([COMPILE_UNIXSOUND], [test "x$unix_sound" = "xyes"])
+
+dnl Don't use X on Microsoft Windows. Cross-compiling from
+dnl Cygwin coululd include /usr/include Cygwin headers.
+if test "x$windows_host" = "xyes" ; then
+  no_x=yes
+else
+  dnl Check for X
+  AC_PATH_XTRA
+  if test "x$no_x" != xyes ; then
+    CFLAGS="$CFLAGS $X_CFLAGS"
+    CXXFLAGS="$CXXFLAGS $X_CFLAGS"
+    LIBS="$LIBS $X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS -lX11"
+  fi
 fi
 AM_CONDITIONAL([COMPILE_X11], [test "x$no_x" != "xyes"])
 

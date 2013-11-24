@@ -1,7 +1,11 @@
 
 bin_PROGRAMS = synaesthesia
 
-synaesthesia_SOURCES = main.cc core.cc sound.cc ui.cc
+synaesthesia_SOURCES = main.cc core.cc ui.cc
+
+if COMPILE_UNIXSOUND
+synaesthesia_SOURCES += sound.cc
+endif
 
 if COMPILE_SVGALIB
 synaesthesia_SOURCES += svgawrap.cc
