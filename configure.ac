@@ -1,9 +1,11 @@
-AC_INIT(main.cc)
+AC_INIT([synaesthesia], [2.4])
+AC_CONFIG_SRCDIR([main.cc])
 
 dnl Detect the canonical host and target build environment
 AC_CANONICAL_SYSTEM
 
-AM_INIT_AUTOMAKE(synaesthesia,2.4)
+AM_INIT_AUTOMAKE
+
 AM_CONFIG_HEADER(config.h)
 
 CXXFLAGS="-O4"
@@ -26,13 +28,16 @@ AC_CHECK_LIB(vga,vga_init)
 
 dnl Check for SDL
 SDL_VERSION=1.2.0
-AM_PATH_SDL($SDL_VERSION,
-            AC_DEFINE(HAVE_SDL),
-            :
-)
+AH_TEMPLATE([HAVE_SDL], [Set to 1 if SDL is available.])
+AM_PATH_SDL($SDL_VERSION, [enable_sdl=1], [enable_sdl=0])
+if test "x$enable_sdl" != x0 ; then
+AC_DEFINE([HAVE_SDL], [1])
 CFLAGS="$CFLAGS $SDL_CFLAGS"
 CXXFLAGS="$CXXFLAGS $SDL_CFLAGS"
 LIBS="$LIBS $SDL_LIBS"
+else
+AC_DEFINE([HAVE_SDL], [0])
+fi
 
 dnl Check for esound
 AC_CHECK_LIB(esd,esd_record_stream_fallback)
