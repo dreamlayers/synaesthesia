@@ -21,6 +21,7 @@
     27 Bond St., Mt. Waverley, 3149, Melbourne, Australia
 */
 
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -107,7 +108,7 @@ char *getConfigFileName(void) {
 #if defined(HAVE_GETPWUID) && defined(HAVE_GETUID)
   //Should i free this? Manual is unclear
   struct passwd *passWord = getpwuid(getuid());
-  if (passWord == 0) return false;
+  if (passWord == 0) return NULL;
 
   char *fileName = new char[strlen(passWord->pw_dir) + 20];
   strcpy(fileName,passWord->pw_dir);
