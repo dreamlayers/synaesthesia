@@ -28,7 +28,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#if HAVE_PWD_H
 #include <pwd.h>
+#endif
 #include <string.h>
 #include "syna.h"
 
@@ -101,6 +103,22 @@ void setStateToDefaults() {
   bgGreenSlider=0.4;
 }
 
+char *getConfigFileName(void) {
+#if defined(HAVE_GETPWUID) && defined(HAVE_GETUID)
+  //Should i free this? Manual is unclear
+  struct passwd *passWord = getpwuid(getuid());
+  if (passWord == 0) return false;
+
+  char *fileName = new char[strlen(passWord->pw_dir) + 20];
+  strcpy(fileName,passWord->pw_dir);
+  strcat(fileName,"/.synaesthesia");
+#else
+  char *fileName = new char[20];
+  strcpy(fileName,".synaesthesia");
+#endif
+  return fileName;
+}
+
 bool loadConfig() {
   setStateToDefaults();
   windX=10;
@@ -111,13 +129,8 @@ bool loadConfig() {
   strcpy(mixerName, "/dev/mixer");
   strcpy(cdromName, "/dev/cdrom");
 
-  //Should i free this? Manual is unclear
-  struct passwd *passWord = getpwuid(getuid());
-  if (passWord == 0) return false;
-
-  char *fileName = new char[strlen(passWord->pw_dir) + 20];
-  strcpy(fileName,passWord->pw_dir);
-  strcat(fileName,"/.synaesthesia");
+  char *fileName = getConfigFileName();
+  if (fileName == NULL) return false;
   FILE *f = fopen(fileName,"rt");
   delete fileName;
 
@@ -171,16 +184,11 @@ bool loadConfig() {
 }
 
 void saveConfig() {
-  //Should i free this? Manual is unclear
-  struct passwd *passWord = getpwuid(getuid());
-  if (passWord == 0) {
+  char *fileName = getConfigFileName();
+  if (fileName == NULL) {
     fprintf(stderr,"Couldn't work out where to put config file.\n");
     return;
   }
-  
-  char *fileName = new char[strlen(passWord->pw_dir) + 20];
-  strcpy(fileName,passWord->pw_dir);
-  strcat(fileName,"/.synaesthesia");
   FILE *f = fopen(fileName,"wt");
   delete fileName;
 
