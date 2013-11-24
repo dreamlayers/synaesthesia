@@ -60,6 +60,7 @@ typedef short sampleType;
 #endif
 #endif
 
+#if !defined(BIGENDIAN) && !defined(LITTLEENDIAN)
 #ifdef __FreeBSD__
 #include <machine/endian.h>
 #else
@@ -71,6 +72,7 @@ typedef short sampleType;
 #else
 #define LITTLEENDIAN
 #endif
+#endif /* !defined(BIGENDIAN) && !defined(LITTLEENDIAN) */
 
 void error(const char *str,bool syscall=false);
 void inline attempt(int x,const char *y,bool syscall=false) { if (x == -1) error(y,syscall); }

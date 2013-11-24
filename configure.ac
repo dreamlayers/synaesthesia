@@ -25,6 +25,10 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
 
+dnl Test endian. This works even if cross compiling.
+AC_C_BIGENDIAN([AC_DEFINE([BIGENDIAN], [], [Host is big endian.])],
+               [AC_DEFINE([LITTLEENDIAN], [], [Host is litle endian.])])
+
 dnl Operating system specific Automake conditionals
 AM_CONDITIONAL([COMPILE_WINDOWS], [test "x$windows_host" = "xyes"])
 AM_CONDITIONAL([COMPILE_UNIXSOUND], [test "x$unix_sound" = "xyes"])
