@@ -418,13 +418,13 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-void error(char *str, bool syscall) { 
+void error(const char *str, bool syscall) {
   fprintf(stderr, "synaesthesia: Error %s\n",str); 
   if (syscall)
     fprintf(stderr,"(reason for error: %s)\n",strerror(errno));
   exit(1);
 }
-void warning(char *str, bool syscall) { 
+void warning(const char *str, bool syscall) {
   fprintf(stderr, "synaesthesia: Possible error %s\n",str); 
   if (syscall)
     fprintf(stderr,"(reason for error: %s)\n",strerror(errno));

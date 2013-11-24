@@ -72,10 +72,10 @@ typedef short sampleType;
 #define LITTLEENDIAN
 #endif
 
-void error(char *str,bool syscall=false);
-void inline attempt(int x,char *y,bool syscall=false) { if (x == -1) error(y,syscall); }  
-void warning(char *str,bool syscall=false);
-void inline attemptNoDie(int x,char *y,bool syscall=false) { if (x == -1) warning(y,syscall); } 
+void error(const char *str,bool syscall=false);
+void inline attempt(int x,const char *y,bool syscall=false) { if (x == -1) error(y,syscall); }
+void warning(const char *str,bool syscall=false);
+void inline attemptNoDie(int x,const char *y,bool syscall=false) { if (x == -1) warning(y,syscall); }
 
 /* *wrap */
 struct BaseScreen {

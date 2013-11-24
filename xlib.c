@@ -302,7 +302,7 @@ void free_image(xdisplay * d)
 #define MAX(x,y) ((x)>(y)?(x):(y))
 
 
-xdisplay *xalloc_display(char *s, int xHint, int yHint, int x, int y, xlibparam * params)
+xdisplay *xalloc_display(const char *s, int xHint, int yHint, int x, int y, xlibparam * params)
 {
     xdisplay *new;
     Visual *defaultvisual;
