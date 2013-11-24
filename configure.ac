@@ -22,9 +22,11 @@ if test "x$no_x" != xyes ; then
   CXXFLAGS="$CXXFLAGS $X_CFLAGS"
   LIBS="$LIBS $X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS -lX11"
 fi
+AM_CONDITIONAL([COMPILE_X11], [test "x$no_x" != "xyes"])
 
 dnl Check for svgalib
 AC_CHECK_LIB(vga,vga_init)
+AM_CONDITIONAL([COMPILE_SVGALIB], [test "x$ac_cv_lib_vga_vga_init" = "xyes"])
 
 dnl Check for SDL
 SDL_VERSION=1.2.0
@@ -38,6 +40,7 @@ LIBS="$LIBS $SDL_LIBS"
 else
 AC_DEFINE([HAVE_SDL], [0])
 fi
+AM_CONDITIONAL([COMPILE_SDL], [test "x$enable_sdl" != "x0"])
 
 dnl Check for esound
 AC_CHECK_LIB(esd,esd_record_stream_fallback)
