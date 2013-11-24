@@ -48,9 +48,16 @@ static char* mixer;
 HWAVEIN hwi;
 HMIXER hmixer;
 WAVEHDR buffer[NUMBUFFERS];
-int bufcount;
-LPWAVEHDR lastWaveHdr;
 HANDLE blockReadySemaphore;
+
+/* Queue of completed wave headers:
+/* It should never overflow because of fixed number of buffers.
+ * It is larger by 1 so full and empty state can be differentiated.
+ */
+#define HDR_QUEUE_SIZE (NUMBUFFERS+1)
+LPWAVEHDR waveHdrQueue[HDR_QUEUE_SIZE];
+volatile unsigned int hdrQueueHead;
+unsigned int hdrQueueTail;
 
 /* This function is only allowed to call a few functions.
  * See documentation for waveInProc.
@@ -61,7 +68,8 @@ void CALLBACK SoundCallback(HWAVEIN lhwi, UINT uMsg, DWORD dwInstance, DWORD dwP
 
   if(uMsg == WIM_DATA)
   {	      
-    lastWaveHdr = (LPWAVEHDR)dwParam1;
+    waveHdrQueue[hdrQueueHead] = (LPWAVEHDR)dwParam1;
+    hdrQueueHead = (hdrQueueHead + 1) % HDR_QUEUE_SIZE;
     ReleaseSemaphore(blockReadySemaphore,1,NULL);
   }
 }
@@ -146,8 +154,11 @@ void openSound(SoundSource source, int inFrequency, char *dspName,
   }
 
   data = (sampleType*) buffer[0].lpData;
-  lastWaveHdr = NULL;
-  bufcount=NUMBUFFERS-1;
+  hdrQueueHead = 0;
+  hdrQueueTail = 0;
+  for(i=0;i<HDR_QUEUE_SIZE;i++) {
+    waveHdrQueue[i] = NULL;
+  }
 
   blockReadySemaphore = CreateSemaphore(NULL,0,NUMBUFFERS,NULL);
   if (!blockReadySemaphore)
@@ -175,40 +186,35 @@ int getNextFragment(void)
 {
   int result, i;
 
-  WaitForSingleObject(blockReadySemaphore, INFINITE);
+  do {
+    WaitForSingleObject(blockReadySemaphore, INFINITE);
 
-  result = waveInUnprepareHeader(hwi,lastWaveHdr,sizeof(WAVEHDR));
-  if(result != MMSYSERR_NOERROR)
-  {
-    error("Couldn't unprepare buffer");
-  }
+    LPWAVEHDR lastWaveHdr = waveHdrQueue[hdrQueueTail];
+    hdrQueueTail = (hdrQueueTail + 1) % HDR_QUEUE_SIZE;
 
-  data = (sampleType*) (lastWaveHdr)->lpData;
+    result = waveInUnprepareHeader(hwi,lastWaveHdr,sizeof(WAVEHDR));
+    if(result != MMSYSERR_NOERROR)
+    {
+      error("Couldn't unprepare buffer");
+    }
 
-  i = 0;
-  //do {
-    buffer[bufcount].dwBufferLength = NumSamples*2*2;
-    buffer[bufcount].dwFlags = 0;
+    data = (sampleType*) (lastWaveHdr)->lpData;
 
-    result = waveInPrepareHeader(hwi,&(buffer[bufcount]),sizeof(WAVEHDR));
+    lastWaveHdr->dwBufferLength = NumSamples*2*2;
+    lastWaveHdr->dwFlags = 0;
+
+    result = waveInPrepareHeader(hwi,lastWaveHdr,sizeof(WAVEHDR));
     if(result != MMSYSERR_NOERROR)
     {
       error("Couldn't prepare buffer");
     }
 
-    result = waveInAddBuffer(hwi,&(buffer[bufcount]),sizeof(WAVEHDR));
+    result = waveInAddBuffer(hwi,lastWaveHdr,sizeof(WAVEHDR));
     if(result != MMSYSERR_NOERROR)
     {
       error("Couldn't add buffer");
     }
-
-    bufcount++;
-    if(bufcount == NUMBUFFERS)
-    {
-      bufcount = 0;
-    }
-//  } while(i++ < NUMBUFFERS &&
-//          WaitForSingleObject(blockReadySemaphore,0) == WAIT_OBJECT_0);
+  } while (hdrQueueHead != hdrQueueTail);
   
   return 0;
 }
