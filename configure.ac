@@ -37,10 +37,16 @@ dnl Operating system specific Automake conditionals
 AM_CONDITIONAL([COMPILE_WINDOWS], [test "x$windows_host" = "xyes"])
 AM_CONDITIONAL([COMPILE_UNIXSOUND], [test "x$unix_sound" = "xyes"])
 
+dnl Use libwinmm for sound on Windows
+if test "x$windows_host" = "xyes" ; then
+LIBS="$LIBS -lwinmm"
+fi
+
 dnl Don't use X on Microsoft Windows. Cross-compiling from
 dnl Cygwin coululd include /usr/include Cygwin headers.
 if test "x$windows_host" = "xyes" ; then
   no_x=yes
+  AC_DEFINE([X_DISPLAY_MISSING], [], [X not being used on Microsoft Windows])
 else
   dnl Check for X
   AC_PATH_XTRA

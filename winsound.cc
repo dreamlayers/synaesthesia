@@ -24,6 +24,9 @@
     27 Bond St., Mt. Waverley, 3149, Melbourne, Australia
 */
 
+#define WIN32_LEAN_AND_MEAN
+#define __W32API_USE_DLLIMPORT__
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
@@ -70,20 +73,20 @@ void CALLBACK SoundCallback(HWAVEIN lhwi, UINT uMsg, DWORD dwInstance, DWORD dwP
 }
 
 
-void openSound(SoundSource source, int inFrequency, int windowSize, char *dspName,
+void openSound(SoundSource source, int inFrequency, char *dspName,
                char *mixerName) 
 {
   ::source = source;
   ::inFrequency = inFrequency;
-  ::windowSize = windowSize;
+  ::windowSize = 1;
   mixer = mixerName;
 
   WAVEFORMATEX format;
 
   format.wFormatTag = WAVE_FORMAT_PCM;
   format.nChannels = 2;
-  format.nSamplesPerSec = frequency;
-  format.nAvgBytesPerSec = frequency*4;
+  format.nSamplesPerSec = Frequency;
+  format.nAvgBytesPerSec = Frequency*4;
   format.nBlockAlign = 4;
   format.wBitsPerSample = 16;
   format.cbSize = 0;
@@ -97,7 +100,7 @@ void openSound(SoundSource source, int inFrequency, int windowSize, char *dspNam
     MMRESULT result = waveInGetDevCaps(j,&wic,sizeof(wic));
 	if(result != MMSYSERR_NOERROR)
 	{
-	  error("Error querying device capabilities");
+	  error("querying device capabilities");
 	}
   }
 */
@@ -107,15 +110,15 @@ void openSound(SoundSource source, int inFrequency, int windowSize, char *dspNam
   if(result != MMSYSERR_NOERROR)
   {
 	if(result == MMSYSERR_ALLOCATED)
-      error("Error opening wave device for recording (device already in use)");
+      error("opening wave device for recording (device already in use)");
 	if(result == MMSYSERR_BADDEVICEID)
-      error("Error opening wave device for recording (bad device ID)");
+      error("opening wave device for recording (bad device ID)");
 	if(result == MMSYSERR_NODRIVER)
-      error("Error opening wave device for recording (no driver)");
+      error("opening wave device for recording (no driver)");
 	if(result == MMSYSERR_NOMEM)
-      error("Error opening wave device for recording (not enough memory)");
+      error("opening wave device for recording (not enough memory)");
 	if(result == WAVERR_BADFORMAT)
-      error("Error opening wave device for recording (bad wave format)");
+      error("opening wave device for recording (bad wave format)");
 
    
     return;
@@ -124,10 +127,10 @@ void openSound(SoundSource source, int inFrequency, int windowSize, char *dspNam
   int i;
   for(i=0;i<NUMBUFFERS;i++)
   {
-	unsigned short* tmpdata = new unsigned short[n*2];
-	memset(tmpdata,0,n*2*2);
+	unsigned short* tmpdata = new unsigned short[NumSamples*2];
+	memset(tmpdata,0,NumSamples*2*2);
 	buffer[i].lpData = (LPSTR) tmpdata;
-    buffer[i].dwBufferLength = n*2*2;	// number of BYTES
+    buffer[i].dwBufferLength = NumSamples*2*2;	// number of BYTES
     buffer[i].dwFlags = 0;
   }
 
@@ -136,14 +139,14 @@ void openSound(SoundSource source, int inFrequency, int windowSize, char *dspNam
     result = waveInPrepareHeader(hwi,&(buffer[i]),sizeof(WAVEHDR));
     if(result != MMSYSERR_NOERROR)
     {
-      error("Error preparing buffer for recording");
+      error("preparing buffer for recording");
       return;
     }
 
     result = waveInAddBuffer(hwi,&(buffer[i]),sizeof(WAVEHDR));
     if(result != MMSYSERR_NOERROR)
     {
-      error("Error preparing buffer for recording");
+      error("preparing buffer for recording");
       return;
     }
   }
@@ -184,7 +187,7 @@ int getNextFragment(void)
 
   i = 0;
   //do {
-    buffer[bufcount].dwBufferLength = n*2*2;
+    buffer[bufcount].dwBufferLength = NumSamples*2*2;
     buffer[bufcount].dwFlags = 0;
 
     result = waveInPrepareHeader(hwi,&(buffer[bufcount]),sizeof(WAVEHDR));
@@ -320,7 +323,7 @@ MCIDEVICEID cd_device;
 bool bugfixed_pause = false;		// for some weird reason, my CD player reports "Stopped" when in pause,
 									// so I keep my own status for this now.
 
-void cdError(char *str) {
+void cdError(const char *str) {
   //May want to print the message, but for now
   delete trackFrame;
   trackFrame = 0;

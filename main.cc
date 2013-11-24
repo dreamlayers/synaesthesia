@@ -226,7 +226,12 @@ void chomp(int &argc,char **argv,int argNum) {
     argv[i] = argv[i+1];
 }
 
-int main(int argc, char **argv) { 
+#if defined(WIN32) && defined(HAVE_SDL)
+extern "C" int SDL_main(int argc, char **argv)
+#else
+int main(int argc, char **argv)
+#endif
+{
   if (!loadConfig())
     saveConfig();
 
