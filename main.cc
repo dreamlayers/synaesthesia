@@ -33,6 +33,9 @@
 #include <pwd.h>
 #endif
 #include <string.h>
+#if HAVE_SDL
+#include <SDL_main.h>
+#endif
 #include "syna.h"
 
 //void setupIcons();
@@ -227,11 +230,7 @@ void chomp(int &argc,char **argv,int argNum) {
     argv[i] = argv[i+1];
 }
 
-#if defined(WIN32) && defined(HAVE_SDL)
-extern "C" int SDL_main(int argc, char **argv)
-#else
 int main(int argc, char **argv)
-#endif
 {
   if (!loadConfig())
     saveConfig();
