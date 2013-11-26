@@ -37,7 +37,28 @@ dnl Operating system specific Automake conditionals
 AM_CONDITIONAL([COMPILE_WINDOWS], [test "x$windows_host" = "xyes"])
 AM_CONDITIONAL([COMPILE_UNIXSOUND], [test "x$unix_sound" = "xyes"])
 
-dnl Use libwinmm for sound on Windows
+dnl Possibility to use PortAudio instead of native sound
+AC_ARG_WITH([portaudio],
+  [AS_HELP_STRING([--with-portaudio],
+    [Use PortAudio instead of native sound])],
+  [],
+  [with_portaudio=no])
+
+AS_IF([test "x$with_portaudio" != xno],
+  [AC_CHECK_LIB([portaudio], [Pa_Initialize],
+    [with_portaudio=yes
+     LIBS="$LIBS -lportaudio"
+     AC_DEFINE([HAVE_PORTAUDIO], [1],
+               [Define to use PortAudio instead of native audio])
+    ],
+    [with_portaudio=no
+     AC_MSG_FAILURE(
+       [--with-portaudio was given, but test for PortAudio failed])
+    ])
+  ])
+AM_CONDITIONAL([COMPILE_PORTAUDIO], [test "x$with_portaudio" = "xyes"])
+
+dnl Use libwinmm for sound and CD control on Windows
 if test "x$windows_host" = "xyes" ; then
 LIBS="$LIBS -lwinmm"
 fi

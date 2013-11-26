@@ -22,3 +22,7 @@ endif
 if COMPILE_WINDOWS
 synaesthesia_SOURCES += winsound.cc
 endif
+
+if COMPILE_PORTAUDIO
+synaesthesia_SOURCES += pawrap.cc
+endif
