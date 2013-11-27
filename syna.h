@@ -166,10 +166,12 @@ enum SymbolID {
 /* State information */
 
 extern SymbolID state;
+#ifdef HAVE_CD_PLAYER
 extern int track, frames;
 extern double trackProgress;
 extern char **playList;
 extern int playListLength, playListPosition;
+#endif /* HAVE_CD_PLAYER */
 extern SymbolID fadeMode;
 extern bool pointsAreDiamonds;
 extern double brightnessTwiddler; 
@@ -184,8 +186,18 @@ void saveConfig();
 void putString(char *string,int x,int y,int red,int blue);
 
 /* sound */
-enum SoundSource { SourceLine, SourceCD, SourcePipe, SourceESD };
+enum SoundSource {
+  SourceLine,
+#ifdef HAVE_CD_PLAYER
+  SourceCD,
+#endif /* HAVE_CD_PLAYER */
+  SourcePipe,
+#ifdef HAVE_LIBESD
+  SourceESD,
+#endif /* HAVE_LIBESD */
+};
 
+#ifdef HAVE_CD_PLAYER
 void cdOpen(char *cdromName);
 void cdClose(void);
 void cdGetStatus(int &track, int &frames, SymbolID &state);
@@ -197,6 +209,7 @@ void cdEject(void);
 void cdCloseTray(void);
 int cdGetTrackCount(void);
 int cdGetTrackFrame(int track);
+#endif /* HAVE_CD_PLAYER */
 void openSound(SoundSource sound, int downFactor, char *dspName, char *mixerName);
 void closeSound();
 void setupMixer(double &loudness);

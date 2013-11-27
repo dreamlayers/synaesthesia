@@ -71,12 +71,16 @@ void allocOutput(int w,int h) {
   outHeight = h;
 }
 
+#ifdef HAVE_CD_PLAYER
 SymbolID state = NoCD;
 int track = 1, frames = 0;
 double trackProgress = 0.0;
 
 char **playList;
 int playListLength, playListPosition;
+#else /* !HAVE_CD_PLAYER */
+SymbolID state = Plug;
+#endif /* !HAVE_CD_PLAYER */
 
 SymbolID fadeMode;
 bool pointsAreDiamonds;
@@ -238,15 +242,22 @@ int main(int argc, char **argv)
   if (argc == 1) {
     printf("SYNAESTHESIA " VERSION "\n\n"
            "Usage:\n"
+
+#ifdef HAVE_CD_PLAYER
            "  synaesthesia cd\n    - listen to a CD\n"
+#endif /* HAVE_CD_PLAYER */
+
            "  synaesthesia line\n    - listen to line input\n"
 
 #if HAVE_LIBESD
            "  synaesthesia esd\n    - listen to EsounD output (eg for use with XMMS)\n"
 #endif
 	   
+#ifdef HAVE_CD_PLAYER
            "  synaesthesia <track> <track> <track>...\n"
 	   "    - play these CD tracks one after the other\n"
+#endif /* HAVE_CD_PLAYER */
+
            "  <another program> |synaesthesia pipe <frequency>\n"
 	   "    - send output of program to sound card as well as displaying it.\n"
 	   "      (must be 16-bit stereo sound)\n"
@@ -308,10 +319,14 @@ int main(int argc, char **argv)
   int configPlayTrack = -1;
   int inFrequency = Frequency;
 
+#ifdef HAVE_CD_PLAYER
   playListLength = 0;
+#endif /* HAVE_CD_PLAYER */
   
   if (strcmp(argv[1],"line") == 0) soundSource = SourceLine;
+#ifdef HAVE_CD_PLAYER
   else if (strcmp(argv[1],"cd") == 0) soundSource = SourceCD;
+#endif /* HAVE_CD_PLAYER */
 
 #if HAVE_LIBESD
   else if (strcmp(argv[1],"esd") == 0) soundSource = SourceESD;
@@ -321,7 +336,9 @@ int main(int argc, char **argv)
     if (argc < 3 || sscanf(argv[2],"%d",&inFrequency) != 1)
       error("frequency not specified");
     soundSource = SourcePipe;
-  } else
+  }
+#ifdef HAVE_CD_PLAYER
+    else
     if (sscanf(argv[1],"%d",&configPlayTrack) != 1)
       error("comprehending user's bizzare requests");
     else {
@@ -339,6 +356,7 @@ int main(int argc, char **argv)
   if (configPlayTrack != -1) {
     cdStop();
   }
+#endif /* HAVE_CD_PLAYER */
 
   openSound(soundSource, inFrequency, dspName, mixerName); 
   
@@ -417,8 +435,10 @@ int main(int argc, char **argv)
 //  if (configPlayTrack != -1)
 //    cdStop();    
   
+#ifdef HAVE_CD_PLAYER
   if (soundSource == SourceCD) 
     cdClose();
+#endif /* HAVE_CD_PLAYER */
 
   closeSound();
 

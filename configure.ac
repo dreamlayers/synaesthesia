@@ -5,12 +5,15 @@ dnl Detect the canonical host system
 AC_CANONICAL_HOST
 windows_host="no"
 unix_sound="no"
+cd_player="no"
 case $host_os in
   mingw*)
     windows_host="yes"
+    cd_player="yes"
     ;;
   linux* | freebsd*)
     unix_sound="yes"
+    cd_player="yes"
     ;;
 esac
 
@@ -36,6 +39,11 @@ AC_CHECK_FUNCS([getpwuid getuid])
 dnl Operating system specific Automake conditionals
 AM_CONDITIONAL([COMPILE_WINDOWS], [test "x$windows_host" = "xyes"])
 AM_CONDITIONAL([COMPILE_UNIXSOUND], [test "x$unix_sound" = "xyes"])
+
+dnl Enable CD player interface if driver is available
+AS_IF([test "x$cd_player" = "xyes"],
+      [AC_DEFINE([HAVE_CD_PLAYER], [1],
+                 [Define to build CD player interface])])
 
 dnl Possibility to use PortAudio instead of native sound
 AC_ARG_WITH([portaudio],

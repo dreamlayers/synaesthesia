@@ -21,6 +21,7 @@
     27 Bond St., Mt. Waverley, 3149, Melbourne, Australia
 */
 
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
@@ -36,14 +37,18 @@
 #include <signal.h>
 #if !defined (__FreeBSD__) && !defined(__FreeBSD_kernel__)
 #include <linux/soundcard.h>
+#ifdef HAVE_CD_PLAYER
 #include <linux/cdrom.h>
 //#include <linux/ucdrom.h>
+#endif /* HAVE_CD_PLAYER */
 #else
 #include <sys/soundcard.h>
+#ifdef HAVE_CD_PLAYER
 #include <sys/cdio.h>
 #define CDROM_LEADOUT 0xAA
 #define CD_FRAMES 75 /* frames per second */
 #define CDROM_DATA_TRACK 0x4
+#endif /* HAVE_CD_PLAYER */
 #endif
 #include <time.h>
 
@@ -56,6 +61,8 @@
 #if HAVE_LIBESD
 #include <esd.h>
 #endif
+
+#ifdef HAVE_CD_PLAYER
 
 static int cdDevice;
 
@@ -294,6 +301,8 @@ void cdCloseTray(void) {
   attemptNoDie(ioctl(cdDevice, CDIOCCLOSE),"ejecting CD",true);
 #endif
 }
+
+#endif /* HAVE_CD_PLAYER */
 
 /* Sound Recording ================================================= */
 

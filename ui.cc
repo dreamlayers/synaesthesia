@@ -174,6 +174,7 @@ struct SliderBar : public UIObject {
   }
 };
 
+#ifdef HAVE_CD_PLAYER
 //Dodgy, uses some globals
 struct TrackSelector : public UIObject {
   int position;
@@ -221,11 +222,14 @@ struct TrackSelector : public UIObject {
       action = -10;
   }
 };
+#endif /* HAVE_CD_PLAYER */
 
 static UIObject *uiObjects; 
 static Button *stateButton, *starsButton, *waveButton, *flameButton,
               *starButton, *diamondButton;
+#ifdef HAVE_CD_PLAYER
 static TrackSelector *trackSelector;
+#endif /* HAVE_CD_PLAYER */
 static int mouseButtons;
 
 void setupPalette(double dummy=0.0) {
@@ -287,11 +291,13 @@ void setupPalette(double dummy=0.0) {
   screen->setPalette(palette);
 }
 
+#ifdef HAVE_CD_PLAYER
 void setTrackProgress(double progress) {
   int interval = cdGetTrackFrame(track+1)-cdGetTrackFrame(track);
   if (interval <= 0) return;
   cdPlay(cdGetTrackFrame(track)+int(interval*progress));
 }
+#endif /* HAVE_CD_PLAYER */
 
 //Visible mask
 #define ALL 1
@@ -302,11 +308,13 @@ void setTrackProgress(double progress) {
 
 //Active mask
 //#define ALL 1
+#ifdef HAVE_CD_PLAYER
 #define PLAYING 2
 #define PAUSED 4
 #define STOPPED 8
 #define NOCD 32 
 #define OPEN 64 
+#endif /* HAVE_CD_PLAYER */
 
 static int visibleMask, cdCheckCountDown;
 static int mouseX, mouseY, lastX, lastY, countDown;
@@ -326,6 +334,7 @@ void interfaceInit() {
   addUI(stateButton = new Button(ALL,ALL,0.05,0.025,IconSize, 0, 0, true, false));
   
   addUI(new PopperUpper(ALL,BUTTONBAR,x=0.25,y=0,1.375,0.25, BUTTONBAR));
+#ifdef HAVE_CD_PLAYER
   x += 0.1; y += 0.025;
   addUI(new Button(PLAYING|PAUSED,BUTTONBAR,x,y,IconSize, SkipBack, '['));
   addUI(new Button(PAUSED|STOPPED|OPEN,BUTTONBAR,x += IconSize,y,IconSize, Play, 'p'));
@@ -334,14 +343,19 @@ void interfaceInit() {
   addUI(new Button(PLAYING|PAUSED,BUTTONBAR,x += IconSize,y,IconSize, SkipFwd, ']'));
   addUI(new Button(PLAYING|PAUSED|STOPPED|NOCD, BUTTONBAR,
                    x += IconSize,y,IconSize, Open, 'e'));
+#else /* !HAVE_CD_PLAYER */
+  x += 0.1 + IconSize*4; y += 0.025;
+#endif /* !HAVE_CD_PLAYER */
   addUI(new Button(ALL, BUTTONBAR,x += IconSize,y,IconSize, Exit, 'q'));
   
+#ifdef HAVE_CD_PLAYER
   addUI(new PopperUpper(PLAYING|PAUSED|STOPPED, ALL,0,0.25,0.25,0.25, TRACKBAR));
   addUI(new PopperUpper(PLAYING|PAUSED|STOPPED, TRACKBAR,x=0.25,y=0.25,1.0,0.625, TRACKBAR));
   x += 0.1; y += 0.1;
   addUI(trackSelector = new TrackSelector(PLAYING|PAUSED|STOPPED, TRACKBAR,x,y,0.75,0.25));
   addUI(new SliderBar(PLAYING|PAUSED, TRACKBAR,x,y+=0.25,0.75,0.25,
                       &trackProgress,setTrackProgress,'{','}'));
+#endif /* HAVE_CD_PLAYER */
 
   addUI(new PopperUpper(ALL,ALL,0,0.5,0.25,0.25, DIALBAR));
   addUI(new Button(ALL,ALL,0.05,0.525,IconSize, Bulb, 0, true, false));
@@ -419,13 +433,16 @@ void interfaceSyncToState() {
 }
 
 int changeState(int transitionSymbol) {
+#ifdef HAVE_CD_PLAYER
   if (transitionSymbol < 0) {
     cdPlay(cdGetTrackFrame(-transitionSymbol));
     return 0;
   }
+#endif /* HAVE_CD_PLAYER */
   
   int retVal = 0;
   switch(transitionSymbol) {
+#ifdef HAVE_CD_PLAYER
     case Play  :
       if (state == Open) {
         cdCloseTray();
@@ -453,6 +470,7 @@ int changeState(int transitionSymbol) {
     case SkipFwd :
       cdPlay(cdGetTrackFrame(track+1));
       break;
+#endif /* HAVE_CD_PLAYER */
 
     case Flame :
       starsButton->bright = false;
@@ -519,6 +537,7 @@ bool interfaceGo() {
     countDown = 40;
     
   int activeMask = ALL;
+#ifdef HAVE_CD_PLAYER
   switch(state) {
     case Play : activeMask |= PLAYING; break;
     case Pause : activeMask |= PAUSED; break;
@@ -527,6 +546,7 @@ bool interfaceGo() {
     case Open : activeMask |= OPEN; break;
     default : break;
   }
+#endif /* HAVE_CD_PLAYER */
 
   if (countDown) {
     countDown--;
@@ -557,6 +577,7 @@ bool interfaceGo() {
 	    action);
     }
 
+#ifdef HAVE_CD_PLAYER
     if (activeMask & (PLAYING|PAUSED|STOPPED)) {
       int trackNumber = (activeMask&(PLAYING|PAUSED) ? track : -1);
       unsigned short trackColor = 0x0100;
@@ -574,6 +595,7 @@ bool interfaceGo() {
 	   scale*0.125,scale*0.25,scale*0.25,scale*0.25);
       }
     }
+#endif /* HAVE_CD_PLAYER */
 
     visibleMask = newVisibleMask;  
     if (visibleMask != 1)
@@ -600,6 +622,7 @@ bool interfaceGo() {
   if (action != NotASymbol)
     quit = quit || changeState(action);
 
+#ifdef HAVE_CD_PLAYER
   if (state != Plug && (action != NotASymbol || cdCheckCountDown < 0)) {
     SymbolID oldState = state;
     cdGetStatus(track, frames, state);
@@ -624,6 +647,7 @@ bool interfaceGo() {
     cdCheckCountDown = 100;
   } else
     cdCheckCountDown -= (countDown ? 10 : 1);
+#endif /* HAVE_CD_PLAYER */
 
   if (mouseClick && action == NotASymbol && !(visibleMask&~ALL)) {
     screen->toggleFullScreen();

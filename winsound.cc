@@ -27,6 +27,7 @@
 #define WIN32_LEAN_AND_MEAN
 #define __W32API_USE_DLLIMPORT__
 
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
@@ -321,6 +322,7 @@ void setVolume(double loudness) {
 
 /* CDROM stuff ============================================== */
 
+#ifdef HAVE_CD_PLAYER
 
 #define CD_FRAMES 75	/* wild guess, but it seems to work...?? */
 
@@ -777,3 +779,5 @@ void cdCloseTray()
   }
   bugfixed_pause = false;
 }
+
+#endif /* HAVE_CD_PLAYER */
