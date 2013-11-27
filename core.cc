@@ -30,6 +30,12 @@
 
 double cosTable[NumSamples], negSinTable[NumSamples];
 int bitReverse[NumSamples];
+/* Mapping from FFT bin to vertical position
+ * as fraction of vertical height, from 1.0 to 0.0.
+ */
+double binToVert[NumSamples/2];
+/* Scale factors for FFT bin brightness */
+double binScale[NumSamples/2];
 int scaleDown[256];
 int maxStarRadius;
 
@@ -64,13 +70,48 @@ void fft(double *x,double *y) {
   }
 }
 
-void coreInit() {
+void coreInit(bool logfreq) {
   int i;
 
   for(i=0;i<NumSamples;i++) {
     negSinTable[i] = -sin(3.141592*2.0/NumSamples*i);
     cosTable[i] = cos(3.141592*2.0/NumSamples*i);
     bitReverse[i] = bitReverser(i);
+  }
+
+  /* Bin 0 is not displayed, so don't bother with it */
+  if (logfreq) {
+    /* The MIDI formula would devote too much of the screen to very
+     * low frequencies. This fixes that problem with minimal effect
+     * on higher frequencies.
+     */
+    static const double bass_shift = 200.0;
+    for(i=1;i<NumSamples/2;i++) {
+      double binfreq = ((double)i) * Frequency / NumSamples;
+      /* Use MIDI tuning standard formula to map frequency */
+      binToVert[i] = 69.0 + 12.0 * log2((binfreq + bass_shift)/440.0);
+    }
+
+    /* Normalize binToVert[] to 1.0 to 0.0 range.
+     * (Inverted so low frequencies are displayed lower.)
+     */
+    double shift = binToVert[1];
+    double scale = binToVert[NumSamples/2-1] - binToVert[1];
+    for(i=1;i<NumSamples/2;i++) {
+      binToVert[i] = 1.0 - (binToVert[i] - shift) / scale;
+    }
+
+    /* Calculate scale factors for bins. */
+    for(i=1;i<NumSamples/2-1;i++) {
+      binScale[i] =0.25 / (binToVert[i] - binToVert[i+1]);
+    }
+    binScale[NumSamples/2-1] = binScale[NumSamples/2-2];
+  } else {
+    /* Set up binToVert[] and binScale[] for results like before. */
+    for(i=1;i<NumSamples/2;i++) {
+      binToVert[i] = 1.0 - (double)(i-1)/(NumSamples/2-2);
+      binScale[i] = i;
+    }
   }
 }
 
@@ -345,7 +386,8 @@ int coreGo() {
     if (a[i] > 0 || b[i] > 0) {
       int h = (int)( b[i]*outWidth / (a[i]+b[i]) );
       int br1, br2, br = (int)( 
-          (a[i]+b[i])*i*brightFactor2 );
+          // In 2.4 was: (a[i]+b[i])*i*brightFactor2 );
+          (a[i]+b[i])*binScale[i]*brightFactor2 );
       br1 = br*(clarity[i]+128)>>8;
       br2 = br*(128-clarity[i])>>8;
 
@@ -353,7 +395,8 @@ int coreGo() {
       if (br2 < 0) br2 = 0; else if (br2 > 255) br2 = 255;
 
       int px = h, 
-          py = outHeight-i*outHeight/(NumSamples/2);
+          //In 2.4 was: py = outHeight-i*outHeight/(NumSamples/2);
+          py = (int)(binToVert[i] * (double)(outHeight - 1) + 0.5);
           //was heightAdd - i / heightFactor;
 
       if (pointsAreDiamonds) {

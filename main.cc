@@ -264,6 +264,7 @@ int main(int argc, char **argv)
 	   "    example: mpg123 -s file.mp3 |synaesthesia pipe 44100\n\n"
 	   "The following optional flags may be used\n"
 
+       "     --log-freq     logarithmic frequency scale\n"
 #if HAVE_SDL
 	   "     --use-sdl      force use of Simple DirectMedia Layer\n"
 #endif
@@ -284,6 +285,7 @@ int main(int argc, char **argv)
 
   //Do flags
   bool fullscreen = false, useSDL = true, useX = true, useSVGA = true;
+  bool logfreq = false;
   for(int i=0;i<argc;)
     if (strcmp(argv[i],"--use-sdl") == 0) {
       useX = false;
@@ -312,6 +314,9 @@ int main(int argc, char **argv)
       windHeight = atoi(argv[i]);
       if (windHeight < 1)
         windHeight = DefaultHeight;
+      chomp(argc,argv,i);
+    } else if (strcmp(argv[i],"--log-freq") == 0) {
+      logfreq = true;
       chomp(argc,argv,i);
     } else
       i++;
@@ -406,7 +411,7 @@ int main(int argc, char **argv)
 
   allocOutput(outWidth,outHeight);
 
-  coreInit();
+  coreInit(logfreq);
 
   setStarSize(starSize);
 
