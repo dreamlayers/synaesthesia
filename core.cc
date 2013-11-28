@@ -103,7 +103,7 @@ void coreInit(bool logfreq) {
 
     /* Calculate scale factors for bins. */
     for(i=1;i<NumSamples/2-1;i++) {
-      binScale[i] =0.25 / (binToVert[i] - binToVert[i+1]);
+      binScale[i] = pow(i / (binToVert[i] - binToVert[i+1]), 0.13) * 20;
     }
     binScale[NumSamples/2-1] = binScale[NumSamples/2-2];
   } else {
