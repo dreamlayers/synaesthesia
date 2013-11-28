@@ -342,10 +342,12 @@ int main(int argc, char **argv)
       error("frequency not specified");
     soundSource = SourcePipe;
   }
-#ifdef HAVE_CD_PLAYER
     else
+#ifdef HAVE_CD_PLAYER
     if (sscanf(argv[1],"%d",&configPlayTrack) != 1)
+#endif /* HAVE_CD_PLAYER */
       error("comprehending user's bizzare requests");
+#ifdef HAVE_CD_PLAYER
     else {
       soundSource = SourceCD;
       playList = argv+1;
