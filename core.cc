@@ -36,6 +36,9 @@ int bitReverse[NumSamples];
 double binToVert[NumSamples/2];
 /* Scale factors for FFT bin brightness */
 double binScale[NumSamples/2];
+/* Hamming window for FFT */
+double hamming[NumSamples];
+bool useWindow;
 int scaleDown[256];
 int maxStarRadius;
 
@@ -70,7 +73,7 @@ void fft(double *x,double *y) {
   }
 }
 
-void coreInit(bool logfreq) {
+void coreInit(bool logfreq, bool window) {
   int i;
 
   for(i=0;i<NumSamples;i++) {
@@ -111,6 +114,14 @@ void coreInit(bool logfreq) {
     for(i=1;i<NumSamples/2;i++) {
       binToVert[i] = 1.0 - (double)(i-1)/(NumSamples/2-2);
       binScale[i] = i;
+    }
+  }
+
+  useWindow = window;
+  if (window) {
+    for (i=0;i<NumSamples;i++) {
+      /* This has been scaled to maintain amplitude */
+      hamming[i] = 1-0.852*cos(2*M_PI*i/(NumSamples-1));
     }
   }
 }
@@ -335,9 +346,16 @@ int coreGo() {
   if (-1 == getNextFragment())
     return -1;
 
-  for(i=0;i<NumSamples;i++) {
-    x[i] = data[i*2];
-    y[i] = data[i*2+1];
+  if (useWindow) {
+    for(i=0;i<NumSamples;i++) {
+      x[i] = data[i*2] * hamming[i];
+      y[i] = data[i*2+1] * hamming[i];
+    }
+  } else {
+    for(i=0;i<NumSamples;i++) {
+      x[i] = data[i*2];
+      y[i] = data[i*2+1];
+    }
   }
 
   fft(x,y);
