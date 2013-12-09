@@ -50,7 +50,7 @@ void openSound(SoundSource source, int inFrequency, char *dspName,
                       &inputParameters,
                       NULL, //&outputParameters,
                       inFrequency,
-                      NumSamples,
+                      NumSamples/2,
                       paClipOff,
                       NULL, /* no callback, use blocking API */
                       NULL); /* no callback, so no callback userData */
@@ -80,8 +80,18 @@ void closeSound() {
 
 int getNextFragment(void) {
   PaError err;
-  err = Pa_ReadStream(stream, data, NumSamples);
-  if (err != paNoError && err != paInputOverflowed)
-    error("reading from PortAudio stream");
+  /* Samples are read in blocks of NumSamples/2, and FFT is performed
+   * on the previous block with the current block appended. This
+   * doubles frame rate.
+   */
+  memcpy(&data[0],&data[NumSamples],NumSamples*2);
+  err = Pa_ReadStream(stream,&data[NumSamples],NumSamples/2);
+  if (err != paNoError) {
+    if (err == paInputOverflowed) {
+      warning("audio overrun, samples skipped");
+    } else {
+      error("reading from PortAudio stream");
+    }
+  }
   return 0;
 }
