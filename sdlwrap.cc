@@ -279,4 +279,16 @@ int SdlScreen::getDepth() {
     return depth;
 }
 
+void SdlScreen::getPixelFormat(int *rshift, unsigned long *rmask,
+                               int *gshift, unsigned long *gmask,
+                               int *bshift, unsigned long *bmask) {
+  SDL_PixelFormat *fmt = surface->format;
+  *rshift = fmt->Rshift;
+  *rmask = fmt->Rmask;
+  *gshift = fmt->Gshift;
+  *gmask = fmt->Gmask;
+  *bshift = fmt->Bshift;
+  *bmask = fmt->Bmask;
+}
+
 #endif

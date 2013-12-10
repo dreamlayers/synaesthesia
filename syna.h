@@ -89,6 +89,9 @@ struct BaseScreen {
   virtual void show() = 0;
   virtual void toggleFullScreen() { }
   virtual int getDepth() { return 8; }
+  virtual void getPixelFormat(int *rshift, unsigned long *rmask,
+                              int *gshift, unsigned long *gmask,
+                              int *bshift, unsigned long *bmask) { }
 };
 
 struct SvgaScreen : public BaseScreen {
@@ -109,6 +112,9 @@ struct SdlScreen : public BaseScreen {
   void show();
   void toggleFullScreen();
   int getDepth();
+  void getPixelFormat(int *rshift, unsigned long *rmask,
+                      int *gshift, unsigned long *gmask,
+                      int *bshift, unsigned long *bmask);
 };
 
 struct XScreen : public BaseScreen {
