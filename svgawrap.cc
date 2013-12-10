@@ -39,7 +39,10 @@ static void setOnePalette(int i,int r,int g,int b) {
   vga_setpalette(i,r/4,g/4,b/4);
 }
 
-bool SvgaScreen::init(int xHint,int yHint,int widthHint,int heightHint,bool fullscreen) {
+bool SvgaScreen::init(int xHint,int yHint,int widthHint,int heightHint,
+                      bool fullscreen,int depth) {
+  if (depth != 8)
+    return false;
   attempt(vga_init(),"initializing svgalib");
   if (!vga_hasmode(G320x200x256)) 
     error("requesting 320x200 graphics mode");

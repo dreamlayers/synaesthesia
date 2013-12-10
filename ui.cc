@@ -4,6 +4,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 
 void putChar(unsigned char character,int x,int y,int red,int blue) {
   unsigned short *ptr = ((unsigned short *)output) + x + y*outWidth;
@@ -231,13 +232,14 @@ static Button *stateButton, *starsButton, *waveButton, *flameButton,
 static TrackSelector *trackSelector;
 #endif /* HAVE_CD_PLAYER */
 static int mouseButtons;
+static int depth;
+static unsigned char *palette;
 
 void setupPalette(double dummy=0.0) {
   #define BOUND(x) ((x) > 255 ? 255 : (x))
   #define PEAKIFY(x) int(BOUND((x) - (x)*(255-(x))/255/2))
   #define MAX(x,y) ((x) > (y) ? (x) : (y))
   int i;
-  unsigned char palette[768];
 
   double scale, fgRed, fgGreen, fgBlue, bgRed, bgGreen, bgBlue;
   fgRed = fgRedSlider;
@@ -258,8 +260,15 @@ void setupPalette(double dummy=0.0) {
   bgGreen /= scale;
   bgBlue /= scale;
   
-  for(i=0;i<256;i++) {
-    int f = i&15, b = i/16;
+  int numpal = (depth == 8) ? 0x100 : 0x10000;
+  for(i=0;i<numpal;i++) {
+    double f, b;
+    if (depth == 32) {
+      f = (double)(i&0xFF)/16, b = (double)(i >> 8)/16;
+    } else {
+      f = i&15, b = i/16;
+    }
+
     //palette[i*3+0] = PEAKIFY(b*bgRed*16+f*fgRed*16);
     //palette[i*3+1] = PEAKIFY(b*bgGreen*16+f*fgGreen*16);
     //palette[i*3+2] = PEAKIFY(b*bgBlue*16+f*fgBlue*16);
@@ -284,9 +293,15 @@ void setupPalette(double dummy=0.0) {
     green *= scale;
     blue *= scale;
     
-    palette[i*3+0] = BOUND(int(red));
-    palette[i*3+1] = BOUND(int(green));
-    palette[i*3+2] = BOUND(int(blue));
+    if (depth == 32) {
+      ((uint32_t*)palette)[i] = (BOUND(int(red)) << 16) |
+                                (BOUND(int(green)) << 8) |
+                                (BOUND(int(blue)) << 0);
+    } else {
+      palette[i*3+0] = BOUND(int(red));
+      palette[i*3+1] = BOUND(int(green));
+      palette[i*3+2] = BOUND(int(blue));
+    }
   }
   screen->setPalette(palette);
 }
@@ -328,6 +343,14 @@ void addUI(UIObject *obj) {
 #define SliderSize 0.125
 void interfaceInit() {
   double x,y;
+  depth = screen->getDepth();
+  if (depth == 8) {
+    palette = new unsigned char[256*3];
+  } else {
+    palette = (unsigned char *)new uint32_t[0x10000];
+  }
+  if (palette == NULL)
+    error("allocating palette");
   uiObjects = 0;
   //addUI(new Button(ALL,0.025,0.525,IconSize, 0, 'x'));
   addUI(new PopperUpper(ALL,ALL,0,0,0.25,0.25, BUTTONBAR));
@@ -665,4 +688,5 @@ void interfaceEnd() {
     delete uiObjects;
     uiObjects = next;
   }
+  delete palette;
 }

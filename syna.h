@@ -81,16 +81,19 @@ void inline attemptNoDie(int x,const char *y,bool syscall=false) { if (x == -1) 
 
 /* *wrap */
 struct BaseScreen {
-  virtual bool init(int xHint, int yHint, int widthHint, int heightHint, bool fullscreen) = 0;
+  virtual bool init(int xHint, int yHint, int widthHint, int heightHint,
+                    bool fullscreen, int depth = 8) = 0;
   virtual void setPalette(unsigned char *palette) = 0;
   virtual void end() = 0;
   virtual void inputUpdate(int &mouseX,int &mouseY,int &mouseButtons,char &keyHit) = 0;
   virtual void show() = 0;
   virtual void toggleFullScreen() { }
+  virtual int getDepth() { return 8; }
 };
 
 struct SvgaScreen : public BaseScreen {
-  bool init(int xHint, int yHint, int widthHint, int heightHint, bool fullscreen);
+  bool init(int xHint, int yHint, int widthHint, int heightHint,
+            bool fullscreen, int depth);
   void setPalette(unsigned char *palette);
   void end();
   void inputUpdate(int &mouseX,int &mouseY,int &mouseButtons,char &keyHit);
@@ -98,16 +101,19 @@ struct SvgaScreen : public BaseScreen {
 };
 
 struct SdlScreen : public BaseScreen {
-  bool init(int xHint, int yHint, int widthHint, int heightHint, bool fullscreen);
+  bool init(int xHint, int yHint, int widthHint, int heightHint,
+            bool fullscreen, int depth);
   void setPalette(unsigned char *palette);
   void end();
   void inputUpdate(int &mouseX,int &mouseY,int &mouseButtons,char &keyHit);
   void show();
   void toggleFullScreen();
+  int getDepth();
 };
 
 struct XScreen : public BaseScreen {
-  bool init(int xHint, int yHint, int widthHint, int heightHint, bool fullscreen);
+  bool init(int xHint, int yHint, int widthHint, int heightHint,
+            bool fullscreen, int depth);
   void setPalette(unsigned char *palette);
   void end();
   void inputUpdate(int &mouseX,int &mouseY,int &mouseButtons,char &keyHit);

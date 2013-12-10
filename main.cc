@@ -266,6 +266,7 @@ int main(int argc, char **argv)
 
        "     --log-freq     logarithmic frequency scale\n"
        "     --hamming      apply hamming window before FFT\n"
+       "     --truecolor    use 32bpp mode\n"
 #if HAVE_SDL
 	   "     --use-sdl      force use of Simple DirectMedia Layer\n"
 #endif
@@ -286,7 +287,7 @@ int main(int argc, char **argv)
 
   //Do flags
   bool fullscreen = false, useSDL = true, useX = true, useSVGA = true;
-  bool logfreq = false, hamming = false;
+  bool logfreq = false, hamming = false, truecolor = false;
   for(int i=0;i<argc;)
     if (strcmp(argv[i],"--use-sdl") == 0) {
       useX = false;
@@ -321,6 +322,9 @@ int main(int argc, char **argv)
       chomp(argc,argv,i);
     } else if (strcmp(argv[i],"--hamming") == 0) {
       hamming = true;
+      chomp(argc,argv,i);
+    } else if (strcmp(argv[i],"--truecolor") == 0) {
+      truecolor = true;
       chomp(argc,argv,i);
     } else
       i++;
@@ -391,7 +395,8 @@ int main(int argc, char **argv)
 #if HAVE_SDL
   if (!screen && useSDL) {
     screen = new SdlScreen;
-    if (!screen->init(windX,windY,windWidth,windHeight,fullscreen))
+    if (!screen->init(windX,windY,windWidth,windHeight,fullscreen,
+                      truecolor ? 32 : 8))
       screen = 0;
   }
 #endif

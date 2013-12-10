@@ -36,6 +36,8 @@ static SDL_Surface *surface;
 static SDL_Color sdlPalette[256];
 static bool fullscreen;
 static int scaling; //currently only supports 1, 2
+static int depth; // bits per pixel
+uint32_t *colorlookup; // pallette for 32bpp
 
 static void createSurface() {
   Uint32 videoflags = SDL_HWSURFACE | SDL_DOUBLEBUF |
@@ -59,7 +61,8 @@ static void createSurface() {
 
   scaling = (any?1:2); 
                
-  surface = SDL_SetVideoMode(outWidth*scaling, outHeight*scaling, 8, videoflags);
+  surface = SDL_SetVideoMode(outWidth*scaling, outHeight*scaling,
+                             depth, videoflags);
   SDL_SetColors(surface, sdlPalette, 0, 256);
 
   if (!surface)
@@ -67,6 +70,11 @@ static void createSurface() {
 }
   
 void SdlScreen::setPalette(unsigned char *palette) {
+  if (depth == 32) {
+    colorlookup = (uint32_t*)palette;
+    return;
+  }
+
   for(int i=0;i<256;i++) {
     sdlPalette[i].r = palette[i*3+0];
     sdlPalette[i].g = palette[i*3+1];
@@ -76,13 +84,18 @@ void SdlScreen::setPalette(unsigned char *palette) {
   SDL_SetColors(surface, sdlPalette, 0, 256);
 }
 
-bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen) 
+bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
+                     int bpp)
 {
   Uint32 videoflags;
 
   outWidth = width;
   outHeight = height;
   ::fullscreen = fullscreen;
+  depth = bpp;
+
+  if (depth != 8 && depth != 32)
+    return false;
 
   /* Initialize SDL */
   if ( SDL_Init(SDL_INIT_VIDEO) < 0 ) {
@@ -170,6 +183,34 @@ void SdlScreen::inputUpdate(int &mouseX,int &mouseY,int &mouseButtons,char &keyH
 void SdlScreen::show(void) { 
   attempt(SDL_LockSurface(surface),"locking screen for output.");
 
+  if (depth == 32) {
+    if (scaling == 1) {
+      uint16_t *in = (uint16_t*)output;
+      uint8_t *line = (uint8_t*)(surface->pixels);
+      for (int y = 0; y < outHeight; y++) {
+        uint32_t *out = (uint32_t*)line;
+        for (int x = 0; x < outWidth; x++) {
+          *(out++) = colorlookup[*(in++)];
+        }
+        line += surface->pitch;
+      }
+    } else {
+      // scaling 2
+      uint16_t *in = (uint16_t*)output;
+      uint8_t *line = (uint8_t*)(surface->pixels);
+      for(int y = 0; y < outHeight; y++) {
+        uint32_t *lp1 = (uint32_t*)line;
+        line += surface->pitch;
+        uint32_t *lp2 = (uint32_t*)line;
+        line += surface->pitch;
+        for(int x = 0; x < outWidth; x++) {
+          register uint32_t v = colorlookup[*(in++)];
+          *(lp1++) = v; *(lp1++) = v;
+          *(lp2++) = v; *(lp2++) = v;
+        } // for each pixel in line
+      } // for each pair of lines
+    } // scaling 2
+  } else
   if (scaling == 1) {
     register uint32_t *ptr2 = (uint32_t*)output;
     uint32_t *ptr1 = (uint32_t*)( surface->pixels );
@@ -232,6 +273,10 @@ void SdlScreen::show(void) {
 
   //SDL_UpdateRect(surface, 0, 0, 0, 0);
   SDL_Flip(surface);
+}
+
+int SdlScreen::getDepth() {
+    return depth;
 }
 
 #endif

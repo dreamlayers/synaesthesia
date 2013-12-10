@@ -43,7 +43,10 @@ static int setOnePalette(int i,int r,int g,int b) {
   return xalloc_color(d,r*257,g*257,b*257,0);
 }
 
-bool XScreen::init(int xHint,int yHint,int widthHint,int heightHint,bool fullscreen) {
+bool XScreen::init(int xHint,int yHint,int widthHint,int heightHint,
+                   bool fullscreen,int depth) {
+  if (depth != 8)
+    return false;
   d = xalloc_display("Synaesthesia",xHint,yHint,widthHint,heightHint,&xparams);
   if (d == 0) {
     printf("Opening an X window failed.\n");
