@@ -152,7 +152,7 @@ extern int outWidth, outHeight;
 
 void allocOutput(int w,int h);
 
-void coreInit(bool logfreq, bool window);
+void coreInit(bool logfreq, bool window, bool addsq);
 void setStarSize(double size);
 int coreGo();
 void fade();

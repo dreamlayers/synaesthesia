@@ -41,6 +41,7 @@ double hamming[NumSamples];
 bool useWindow;
 int scaleDown[256];
 int maxStarRadius;
+unsigned char addPixelTab[0x10000];
 
 int bitReverser(int i) {
   int sum=0,j;
@@ -73,13 +74,39 @@ void fft(double *x,double *y) {
   }
 }
 
-void coreInit(bool logfreq, bool window) {
+void coreInit(bool logfreq, bool window, bool addsq) {
   int i;
 
   for(i=0;i<NumSamples;i++) {
     negSinTable[i] = -sin(3.141592*2.0/NumSamples*i);
     cosTable[i] = cos(3.141592*2.0/NumSamples*i);
     bitReverse[i] = bitReverser(i);
+  }
+
+  double globalscale = 1.0;
+
+  if (addsq) {
+    for (i=0;i<0x10000;i++) {
+      double pix, br, total;
+      pix = i >> 8;
+      br = i & 0xFF;
+      total = sqrt(pix*pix+br*br);
+      if (total > 255.0) {
+        addPixelTab[i] = 255;
+      } else {
+        addPixelTab[i] = (unsigned char)(total + 0.5);
+      }
+    }
+    /* Compensate for brightness loss */
+    globalscale *= 2.7;
+  } else {
+    for (i=0;i<0x10000;i++) {
+      unsigned char pix, br;
+      pix = i >> 8;
+      br = i & 0xFF;
+      if (pix < 255-br) pix += br; else pix = 255;
+      addPixelTab[i] = pix;
+    }
   }
 
   /* Bin 0 is not displayed, so don't bother with it */
@@ -106,14 +133,15 @@ void coreInit(bool logfreq, bool window) {
 
     /* Calculate scale factors for bins. */
     for(i=1;i<NumSamples/2-1;i++) {
-      binScale[i] = pow(i / (binToVert[i] - binToVert[i+1]), 0.13) * 20;
+      binScale[i] = pow(i / (binToVert[i] - binToVert[i+1]), 0.13)
+                    * 20 * globalscale;
     }
     binScale[NumSamples/2-1] = binScale[NumSamples/2-2];
   } else {
     /* Set up binToVert[] and binScale[] for results like before. */
     for(i=1;i<NumSamples/2;i++) {
       binToVert[i] = 1.0 - (double)(i-1)/(NumSamples/2-2);
-      binScale[i] = i;
+      binScale[i] = i * globalscale;
     }
   }
 
@@ -153,16 +181,20 @@ inline void addPixel(int x,int y,int br1,int br2) {
   if (x < 0 || x >= outWidth || y < 0 || y >= outHeight) return;
   
   unsigned char *p = output+x*2+y*outWidth*2;
-  if (p[0] < 255-br1) p[0] += br1; else p[0] = 255;
-  if (p[1] < 255-br2) p[1] += br2; else p[1] = 255;
+  //In 2.4: if (p[0] < 255-br1) p[0] += br1; else p[0] = 255;
+  //In 2.4: if (p[1] < 255-br2) p[1] += br2; else p[1] = 255;
+  p[0] = addPixelTab[(p[0]<<8)|br1];
+  p[1] = addPixelTab[(p[1]<<8)|br2];
   //p += lastOutput-output;
   //if (p[0] < 255-br1) p[0] += br1; else p[0] = 255;
   //if (p[1] < 255-br2) p[1] += br2; else p[1] = 255;
 }
 
 inline void addPixelFast(unsigned char *p,int br1,int br2) {
-  if (p[0] < 255-br1) p[0] += br1; else p[0] = 255;
-  if (p[1] < 255-br2) p[1] += br2; else p[1] = 255;
+  //In 2.4: if (p[0] < 255-br1) p[0] += br1; else p[0] = 255;
+  //In 2.4: if (p[1] < 255-br2) p[1] += br2; else p[1] = 255;
+  p[0] = addPixelTab[(p[0]<<8)|br1];
+  p[1] = addPixelTab[(p[1]<<8)|br2];
   //p += lastOutput-output;
   //if (p[0] < 255-br1) p[0] += br1; else p[0] = 255;
   //if (p[1] < 255-br2) p[1] += br2; else p[1] = 255;

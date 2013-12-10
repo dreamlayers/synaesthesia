@@ -267,6 +267,7 @@ int main(int argc, char **argv)
        "     --log-freq     logarithmic frequency scale\n"
        "     --hamming      apply hamming window before FFT\n"
        "     --truecolor    use 32bpp mode\n"
+       "     --addsq        add pixels by squaring\n"
 #if HAVE_SDL
 	   "     --use-sdl      force use of Simple DirectMedia Layer\n"
 #endif
@@ -287,7 +288,7 @@ int main(int argc, char **argv)
 
   //Do flags
   bool fullscreen = false, useSDL = true, useX = true, useSVGA = true;
-  bool logfreq = false, hamming = false, truecolor = false;
+  bool logfreq = false, hamming = false, truecolor = false, addsq = false;
   for(int i=0;i<argc;)
     if (strcmp(argv[i],"--use-sdl") == 0) {
       useX = false;
@@ -325,6 +326,9 @@ int main(int argc, char **argv)
       chomp(argc,argv,i);
     } else if (strcmp(argv[i],"--truecolor") == 0) {
       truecolor = true;
+      chomp(argc,argv,i);
+    } else if (strcmp(argv[i],"--addsq") == 0) {
+      addsq = true;
       chomp(argc,argv,i);
     } else
       i++;
@@ -422,7 +426,7 @@ int main(int argc, char **argv)
 
   allocOutput(outWidth,outHeight);
 
-  coreInit(logfreq, hamming);
+  coreInit(logfreq, hamming, addsq);
 
   setStarSize(starSize);
 
