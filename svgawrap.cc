@@ -52,8 +52,9 @@ bool SvgaScreen::init(int xHint,int yHint,int widthHint,int heightHint,
   scr = vga_getgraphmem();
   outWidth = 320;
   outHeight = 200;
- 
-  attemptNoDie(mouse_init("/dev/mouse",
+
+  char mousedev[] = "/dev/mouse";
+  attemptNoDie(mouse_init(mousedev,
     vga_getmousetype(),MOUSE_DEFAULTSAMPLERATE),"initializing mouse");
   mouse_setxrange(-1,321);
   mouse_setyrange(-1,201);
