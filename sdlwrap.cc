@@ -215,16 +215,28 @@ void SdlScreen::show(void) {
   } else
   if (scaling == 1) {
     register uint32_t *ptr2 = (uint32_t*)output;
-    uint32_t *ptr1 = (uint32_t*)( surface->pixels );
-    int i = outWidth*outHeight/sizeof(*ptr2);
+    int lines, linelen;
+    if (surface->pitch == outWidth) {
+      // Do everything at once
+      lines = 1;
+      linelen = outWidth*outHeight/sizeof(*ptr2);
+    } else {
+      // Do one line at once, adjusting for pitch between lines
+      lines = outHeight;
+      linelen = outWidth/sizeof(*ptr2);
+    }
 
-    do {
-      // Asger Alstrup Nielsen's (alstrup@diku.dk)
-      // optimized 32 bit screen loop
-      register unsigned int const r1 = *(ptr2++);
-      register unsigned int const r2 = *(ptr2++);
-    
-      //if (r1 || r2) {
+    for (int y = 0; y < lines; y++) {
+      uint32_t *ptr1 = (uint32_t*)( (uint8_t*)surface->pixels +
+                                    surface->pitch * y);
+      int i = linelen;
+
+      do {
+        // Asger Alstrup Nielsen's (alstrup@diku.dk)
+        // optimized 32 bit screen loop
+        register unsigned int const r1 = *(ptr2++);
+        register unsigned int const r2 = *(ptr2++);
+
   #ifdef LITTLEENDIAN
         register unsigned int const v = 
             ((r1 & 0x000000f0ul) >> 4)
@@ -248,16 +260,15 @@ void SdlScreen::show(void) {
           | ((r1 & 0x00f00000ul) << 4)
           | ((r1 & 0xf0000000ul)));
   #endif
-      //} else ptr1++;
-    } while (--i); 
-  
+      } while (--i);
+    }
   } else {
     // SDL has no standard image scaling routine (!)
     uint8_t *pixels = (uint8_t*)(surface->pixels);
     for(int y=0;y<outHeight;y++) {
       uint32_t *p1 = (uint32_t*)(output+y*outWidth*2);
-      uint32_t *p2 = (uint32_t*)(pixels+y*2*outWidth*2);
-      uint32_t *p3 = (uint32_t*)(pixels+(y*2+1)*outWidth*2);
+      uint32_t *p2 = (uint32_t*)(pixels+y*2*surface->pitch);
+      uint32_t *p3 = (uint32_t*)(pixels+(y*2+1)*surface->pitch);
       for(int x=0;x<outWidth;x+=2) {
         uint32_t v = *(p1++);
         v = ((v&0x000000f0) >> 4)
