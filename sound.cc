@@ -477,8 +477,8 @@ void openSound(SoundSource source, int inFrequency, char *dspName,
   pipeBufferDelay = 0;
   mixer = mixerName;
 
-  if (source == SourceESD) {
 #if HAVE_LIBESD
+  if (source == SourceESD) {
     attempt(pipeIn = esd_monitor_stream(
 	    ESD_BITS16|ESD_STEREO|ESD_STREAM|ESD_PLAY,Frequency,0,PACKAGE),
             "connecting to EsounD");
@@ -491,9 +491,9 @@ void openSound(SoundSource source, int inFrequency, char *dspName,
     pipeBufferDelay = int( double(pipeBufferDelay) * Frequency * 2 / 44100 );
     // there should be an extra factor of two here... but it looks wrong
     // if i put it in... hmm
-    
+  } else
 #endif
-  } else {
+  {
     downFactor = inFrequency / Frequency; 
     if (downFactor <= 0)
       downFactor = 1;
