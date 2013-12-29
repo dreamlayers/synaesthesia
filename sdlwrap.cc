@@ -63,10 +63,12 @@ static void createSurface() {
                
   surface = SDL_SetVideoMode(outWidth*scaling, outHeight*scaling,
                              depth, videoflags);
-  SDL_SetColors(surface, sdlPalette, 0, 256);
 
   if (!surface)
     error("setting video mode");
+
+  if (depth == 8)
+    SDL_SetColors(surface, sdlPalette, 0, 256);
 }
   
 void SdlScreen::setPalette(unsigned char *palette) {
@@ -276,18 +278,34 @@ void SdlScreen::show(void) {
 }
 
 int SdlScreen::getDepth() {
-    return depth;
+  return depth;
+}
+
+/* Calculate right shift needed to align colour component MSB with bit 7.
+ * This assumes a 32 bpp or 24 bpp mode, where a left shift shouldn't
+ * ever be necessary.
+ *
+ * SDL does provide Rshift, Bshift and Gshift, but those are documented as
+ * "(internal use)" and Emscripten's SDL doesn't set them.
+ */
+static int getPixelShift(Uint32 mask) {
+  int shift = 0;
+  while ((mask & ~0xFF) != 0) {
+      shift++;
+      mask >>= 1;
+  }
+  return shift;
 }
 
 void SdlScreen::getPixelFormat(int *rshift, unsigned long *rmask,
                                int *gshift, unsigned long *gmask,
                                int *bshift, unsigned long *bmask) {
   SDL_PixelFormat *fmt = surface->format;
-  *rshift = fmt->Rshift;
+  *rshift = getPixelShift(fmt->Rmask);
   *rmask = fmt->Rmask;
-  *gshift = fmt->Gshift;
+  *gshift = getPixelShift(fmt->Gmask);
   *gmask = fmt->Gmask;
-  *bshift = fmt->Bshift;
+  *bshift = getPixelShift(fmt->Bmask);
   *bmask = fmt->Bmask;
 }
 
