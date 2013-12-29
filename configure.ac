@@ -88,7 +88,10 @@ fi
 AM_CONDITIONAL([COMPILE_X11], [test "x$no_x" != "xyes"])
 
 dnl Check for svgalib
-AC_CHECK_LIB(vga,vga_init)
+AC_CHECK_HEADERS([vga.h vgamouse.h])
+AS_IF([test "x$ac_cv_header_vga_h" = "xyes" -a dnl
+            "x$ac_cv_header_vgamouse_h" = "xyes" ],
+      [AC_CHECK_LIB(vga,vga_init)])
 AM_CONDITIONAL([COMPILE_SVGALIB], [test "x$ac_cv_lib_vga_vga_init" = "xyes"])
 
 dnl Check for SDL
