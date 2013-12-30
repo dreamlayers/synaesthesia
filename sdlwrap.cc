@@ -39,6 +39,12 @@ static int scaling; //currently only supports 1, 2
 static int depth; // bits per pixel
 uint32_t *colorlookup; // pallette for 32bpp
 
+static void sdlError(const char *str) {
+  fprintf(stderr, "synaesthesia: Error %s\n", str);
+  fprintf(stderr,"(reason for error: %s)\n", SDL_GetError());
+  exit(1);
+}
+
 static void createSurface() {
   Uint32 videoflags = SDL_HWSURFACE | SDL_DOUBLEBUF |
                       SDL_RESIZABLE | (fullscreen?SDL_FULLSCREEN:0);
@@ -65,7 +71,7 @@ static void createSurface() {
                              depth, videoflags);
 
   if (!surface)
-    error("setting video mode");
+    sdlError("setting video mode");
 
   if (depth == 8)
     SDL_SetColors(surface, sdlPalette, 0, 256);
@@ -100,11 +106,8 @@ bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
     return false;
 
   /* Initialize SDL */
-  if ( SDL_Init(SDL_INIT_VIDEO) < 0 ) {
-    char str[1000];
-    printf(str, "Could not initialize SDL library: %s\n",SDL_GetError());
-    return false;
-  }
+  if ( SDL_Init(SDL_INIT_VIDEO) < 0 )
+    sdlError("initializing SDL");
 
   SDL_WM_SetCaption("Synaesthesia","synaesthesia");
 
