@@ -29,8 +29,11 @@ Makefile
 # Compiled files
 
 *.o
+*.map
 synaesthesia
 synaesthesia.exe
+synaesthesia.js
+synaesthesia.html
 
 # Miscellaneous files
 

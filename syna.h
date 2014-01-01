@@ -49,6 +49,10 @@
 
 typedef unsigned short sampleType;
 
+#elif defined(EMSCRIPTEN)
+
+typedef float sampleType;
+
 #else
 
 typedef short sampleType;

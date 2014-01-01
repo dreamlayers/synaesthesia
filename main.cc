@@ -239,6 +239,7 @@ int main(int argc, char **argv)
   if (!loadConfig())
     saveConfig();
 
+#ifndef EMSCRIPTEN
   if (argc == 1) {
     printf("SYNAESTHESIA " VERSION "\n\n"
            "Usage:\n"
@@ -285,6 +286,7 @@ int main(int argc, char **argv)
 	   );
     return 1;
   }
+#endif
 
   //Do flags
   bool fullscreen = false, useSDL = true, useX = true, useSVGA = true;
@@ -340,6 +342,7 @@ int main(int argc, char **argv)
   playListLength = 0;
 #endif /* HAVE_CD_PLAYER */
   
+#ifndef EMSCRIPTEN
   if (strcmp(argv[1],"line") == 0) soundSource = SourceLine;
 #ifdef HAVE_CD_PLAYER
   else if (strcmp(argv[1],"cd") == 0) soundSource = SourceCD;
@@ -359,6 +362,7 @@ int main(int argc, char **argv)
     if (sscanf(argv[1],"%d",&configPlayTrack) != 1)
 #endif /* HAVE_CD_PLAYER */
       error("comprehending user's bizzare requests");
+
 #ifdef HAVE_CD_PLAYER
     else {
       soundSource = SourceCD;
@@ -376,6 +380,9 @@ int main(int argc, char **argv)
     cdStop();
   }
 #endif /* HAVE_CD_PLAYER */
+#else /* EMSCRIPTEN */
+    soundSource = SourceLine;
+#endif
 
   openSound(soundSource, inFrequency, dspName, mixerName); 
   
@@ -432,6 +439,10 @@ int main(int argc, char **argv)
 
   interfaceInit();
 
+/* With Emscripten, main() returns after initialization, and
+ * further calls come from JavaScript via displaySynaesthesia().
+ */
+#ifndef EMSCRIPTEN
   time_t timer = time(NULL);
   
   int frames = 0;
@@ -467,7 +478,7 @@ int main(int argc, char **argv)
 
   if (timer > 10)
     printf("Frames per second: %f\n", double(frames) / timer);
-  
+#endif /* !EMSCRIPTEN */
   return 0;
 }
 
