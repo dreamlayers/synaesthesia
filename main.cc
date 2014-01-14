@@ -335,7 +335,9 @@ int main(int argc, char **argv)
     } else
       i++;
 
+#ifdef HAVE_CD_PLAYER
   int configPlayTrack = -1;
+#endif
   int inFrequency = Frequency;
 
 #ifdef HAVE_CD_PLAYER

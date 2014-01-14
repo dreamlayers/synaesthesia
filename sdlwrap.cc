@@ -95,8 +95,6 @@ void SdlScreen::setPalette(unsigned char *palette) {
 bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
                      int bpp)
 {
-  Uint32 videoflags;
-
   outWidth = width;
   outHeight = height;
   ::fullscreen = fullscreen;
@@ -130,8 +128,7 @@ void SdlScreen::toggleFullScreen(void) {
 
 void SdlScreen::inputUpdate(int &mouseX,int &mouseY,int &mouseButtons,char &keyHit) {    
   SDL_Event event;
-  bool resized = false;
- 
+
   keyHit = 0;
   
   while ( SDL_PollEvent(&event) > 0 ) {

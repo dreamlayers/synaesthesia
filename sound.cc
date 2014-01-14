@@ -562,7 +562,7 @@ int getNextFragment(void) {
   // hence, this section is a bit hacked...
   static int step = 4096;
 
-  bool end = false, any = false;
+  bool end = false;
 
   // This seems to be necessary. Not sure why.
   usleep(1000);
