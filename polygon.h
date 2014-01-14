@@ -71,7 +71,7 @@ struct PolygonEngine : public Bitmap<Pixel> {
       colors= colorTable[0];
     }
 
-    int slope = (x1-x2 << 16)/(y1-y2);
+    int slope = ((x1-x2) << 16)/(y1-y2);
     int x = x1<<16, y = y1;
     while(y < y2) {
       add(colors[super-((x>>16)&(super-1))],

@@ -248,11 +248,11 @@ inline unsigned char getPixel(int x,int y,int where) {
 
 inline void fadePixelWave(int x,int y,int where,int step) {
   short j = 
-    ( short(getPixel(x-1,y,where-2))+
-    getPixel(x+1,y,where+2)+
-    getPixel(x,y-1,where-step)+
-    getPixel(x,y+1,where+step)
-    >> 2)
+    ((short(getPixel(x-1,y,where-2))+
+      getPixel(x+1,y,where+2)+
+      getPixel(x,y-1,where-step)+
+      getPixel(x,y+1,where+step))
+     >> 2)
     +lastOutput[where];
   if (!j) { output[where] = 0; return; }
   j = j
@@ -291,12 +291,12 @@ void fadeWave() {
     int i = start;
     do {
       short j = 
-	( short(lastOutput[i-2])+
-	lastOutput[i+2]+
-	lastOutput[i-step]+
-	lastOutput[i+step]
-	>> 2)
-	+lastOutput[i];
+        ((short(lastOutput[i-2])+
+          lastOutput[i+2]+
+          lastOutput[i-step]+
+          lastOutput[i+step])
+         >> 2)
+        +lastOutput[i];
       if (!j) { 
         output[i] = 0; 
       } else {
@@ -313,11 +313,11 @@ void fadeWave() {
 
 inline void fadePixelHeat(int x,int y,int where,int step) {
   short j = 
-    ( short(getPixel(x-1,y,where-2))+
-    getPixel(x+1,y,where+2)+
-    getPixel(x,y-1,where-step)+
-    getPixel(x,y+1,where+step)
-    >> 2)
+    ((short(getPixel(x-1,y,where-2))+
+      getPixel(x+1,y,where+2)+
+      getPixel(x,y-1,where-step)+
+      getPixel(x,y+1,where+step))
+     >> 2)
     +lastOutput[where];
   if (!j) { output[where] = 0; return; }
   j = j
@@ -356,20 +356,20 @@ void fadeHeat() {
     int i = start;
     do {
       short j = 
-	( short(lastOutput[i-2])+
-	lastOutput[i+2]+
-	+lastOutput[i-step]
-	+lastOutput[i+step]
-	>> 2)
-	+lastOutput[i];
+        ((short(lastOutput[i-2])+
+          lastOutput[i+2]+
+          +lastOutput[i-step]
+          +lastOutput[i+step])
+         >> 2)
+        +lastOutput[i];
       if (!j) { 
         output[i] = 0; 
       } else {
         j = j
-  	  -lastLastOutput[i]
-  	  +(lastLastOutput[i]
-	   -lastOutput[i]>>2)
-	  -1;
+          -lastLastOutput[i]
+          +((lastLastOutput[i]
+             -lastOutput[i])>>2)
+          -1;
         if (j < 0) output[i] = 0;
         else if (j & (255*256)) output[i] = 255;
         else output[i] = j; 
