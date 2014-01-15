@@ -32,6 +32,13 @@
 #if HAVE_PWD_H
 #include <pwd.h>
 #endif
+#ifdef WIN32
+#define WIN32_LEAN_AND_MEAN
+#define __W32API_USE_DLLIMPORT__
+#include <windows.h>
+#include <Shlobj.h>
+#include <Shlwapi.h>
+#endif
 #include <string.h>
 #if HAVE_SDL
 #include <SDL_main.h>
@@ -120,6 +127,15 @@ char *getConfigFileName(void) {
   char *fileName = new char[strlen(passWord->pw_dir) + 20];
   strcpy(fileName,passWord->pw_dir);
   strcat(fileName,"/.synaesthesia");
+#elif defined(WIN32)
+  const char name[] = "synaesthesia.cfg";
+  char *fileName = new char[MAX_PATH];
+  if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL,
+                                 SHGFP_TYPE_CURRENT, fileName))) {
+    PathAppendA(fileName, name);
+  } else {
+    strcpy(fileName, name);
+  }
 #else
   char *fileName = new char[20];
   strcpy(fileName,".synaesthesia");

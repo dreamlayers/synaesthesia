@@ -33,6 +33,7 @@ case $host_os in
   mingw*)
     windows_host="yes"
     cd_player="yes"
+    LIBS="$LIBS -lshlwapi"
     ;;
   linux* | freebsd*)
     unix_sound="yes"
