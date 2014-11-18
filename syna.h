@@ -65,7 +65,7 @@ typedef float sampleType;
 
 typedef short sampleType;
 
-#ifndef __linux__
+#if !defined(__linux__) && !defined(WIN32)
 
 #warning This target has not been tested!
 
