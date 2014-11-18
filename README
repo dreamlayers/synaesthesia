@@ -20,9 +20,9 @@ and stereo position as the horizontal position. It can also understand
 surround sound encoded music, and shows ambient noise in a different
 color.
 
-Synaesthesia can run in a window in X, or full screen using SVGAlib,
-or either using Simple DirectMedia Layer (SDL). Use of the SDL is
-recommended.
+Synaesthesia uses Simple DirectMedia Layer (SDL), which supports many
+different output methods. Direct support for X11 and SVGAlib has been
+removed. Both are supported via SDL.
 
 It can take input from a CD, line input, EsounD, or piped from another
 program. As of version 2.2, EsounD support is much improved. For example,

@@ -105,29 +105,6 @@ AS_IF([test "x$with_portaudio" != xno],
   ])
 AM_CONDITIONAL([COMPILE_PORTAUDIO], [test "x$with_portaudio" = "xyes"])
 
-dnl Don't use X on Microsoft Windows. Cross-compiling from
-dnl Cygwin coululd include /usr/include Cygwin headers.
-if test "x$windows_host" = "xyes" ; then
-  no_x=yes
-  AC_DEFINE([X_DISPLAY_MISSING], [], [X not being used on Microsoft Windows])
-else
-  dnl Check for X
-  AC_PATH_XTRA
-  if test "x$no_x" != xyes ; then
-    CFLAGS="$CFLAGS $X_CFLAGS"
-    CXXFLAGS="$CXXFLAGS $X_CFLAGS"
-    LIBS="$LIBS $X_PRE_LIBS $X_LIBS $X_EXTRA_LIBS -lX11"
-  fi
-fi
-AM_CONDITIONAL([COMPILE_X11], [test "x$no_x" != "xyes"])
-
-dnl Check for svgalib
-AC_CHECK_HEADERS([vga.h vgamouse.h])
-AS_IF([test "x$ac_cv_header_vga_h" = "xyes" -a dnl
-            "x$ac_cv_header_vgamouse_h" = "xyes" ],
-      [AC_CHECK_LIB(vga,vga_init)])
-AM_CONDITIONAL([COMPILE_SVGALIB], [test "x$ac_cv_lib_vga_vga_init" = "xyes"])
-
 dnl Check for SDL
 SDL_VERSION=1.2.0
 AH_TEMPLATE([HAVE_SDL], [Set to 1 if SDL is available.])

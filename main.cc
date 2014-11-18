@@ -289,15 +289,6 @@ int main(int argc, char **argv)
        "     --hamming      apply hamming window before FFT\n"
        "     --truecolor    use 32bpp mode\n"
        "     --addsq        add pixels by squaring\n"
-#if HAVE_SDL
-	   "     --use-sdl      force use of Simple DirectMedia Layer\n"
-#endif
-#ifndef X_DISPLAY_MISSING 
-	   "     --use-x        force use of X-Windows\n"
-#endif
-#if HAVE_LIBVGA
-	   "     --use-svga     force use of SVGALib\n"
-#endif
 	   "     --fullscreen   try to take over the whole screen\n"
 	   "     --width nnn    make the window this wide\n"
 	   "     --height nnn   make the window this high\n\n"
@@ -309,23 +300,11 @@ int main(int argc, char **argv)
 #endif
 
   //Do flags
-  bool fullscreen = false, useSDL = true, useX = true, useSVGA = true;
+  bool fullscreen = false;
   bool logfreq = false, hamming = false, truecolor = false, addsq = false;
 #ifndef WINAMP
   for(int i=0;i<argc;)
-    if (strcmp(argv[i],"--use-sdl") == 0) {
-      useX = false;
-      useSVGA = false;
-      chomp(argc,argv,i);
-    } else if (strcmp(argv[i],"--use-x") == 0) {
-      useSDL = false;
-      useSVGA = false;
-      chomp(argc,argv,i);
-    } else if (strcmp(argv[i],"--use-svga") == 0) {
-      useSDL = false;
-      useX = false;
-      chomp(argc,argv,i);
-    } else if (strcmp(argv[i],"--fullscreen") == 0) {
+    if (strcmp(argv[i],"--fullscreen") == 0) {
       fullscreen = true;
       chomp(argc,argv,i);
     } else if (strcmp(argv[i],"--width") == 0) {
@@ -425,32 +404,10 @@ int main(int argc, char **argv)
   //else if (volume < 0.0)
   //  volume = 0.0;
 
-  screen = 0;
-
-#if HAVE_SDL
-  if (!screen && useSDL) {
-    screen = new SdlScreen;
-    if (!screen->init(windX,windY,windWidth,windHeight,fullscreen,
-                      truecolor ? 32 : 8))
-      screen = 0;
-  }
-#endif
-
-#ifndef X_DISPLAY_MISSING
-  if (!screen && useX) {
-    screen = new XScreen;
-    if (!screen->init(windX,windY,windWidth,windHeight,fullscreen))
-      screen = 0;
-  }
-#endif
-
-#if HAVE_LIBVGA
-  if (!screen && useSVGA) {
-    screen = new SvgaScreen;
-    if (!screen->init(windX,windY,windWidth,windHeight,fullscreen))
-      screen = 0;
-  }
-#endif
+  screen = new SdlScreen;
+  if (!screen->init(windX,windY,windWidth,windHeight,fullscreen,
+                    truecolor ? 32 : 8))
+    screen = 0;
 
   if (!screen)
     error("opening any kind of display device");

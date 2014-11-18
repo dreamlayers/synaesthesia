@@ -106,15 +106,6 @@ struct BaseScreen {
                               int *bshift, unsigned long *bmask) { }
 };
 
-struct SvgaScreen : public BaseScreen {
-  bool init(int xHint, int yHint, int widthHint, int heightHint,
-            bool fullscreen, int depth);
-  void setPalette(unsigned char *palette);
-  void end();
-  void inputUpdate(int &mouseX,int &mouseY,int &mouseButtons,char &keyHit);
-  void show();
-};
-
 struct SdlScreen : public BaseScreen {
   bool init(int xHint, int yHint, int widthHint, int heightHint,
             bool fullscreen, int depth);
@@ -127,15 +118,6 @@ struct SdlScreen : public BaseScreen {
   void getPixelFormat(int *rshift, unsigned long *rmask,
                       int *gshift, unsigned long *gmask,
                       int *bshift, unsigned long *bmask);
-};
-
-struct XScreen : public BaseScreen {
-  bool init(int xHint, int yHint, int widthHint, int heightHint,
-            bool fullscreen, int depth);
-  void setPalette(unsigned char *palette);
-  void end();
-  void inputUpdate(int &mouseX,int &mouseY,int &mouseButtons,char &keyHit);
-  void show();
 };
 
 /* core */
