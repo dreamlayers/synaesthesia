@@ -24,22 +24,30 @@ AS_IF([test "x$enable_emscripten" = "xyes"],
 
 AM_CONDITIONAL([COMPILE_EMSCRIPTEN], [test "x$enable_emscripten" = "xyes"])
 
+AC_ARG_ENABLE(
+  [winamp],
+  [AC_HELP_STRING([--enable-winamp=@<:@no/yes@:>@],
+                  [compile Winamp visualization plugin])])
+
 dnl Detect the canonical host system
 AC_CANONICAL_HOST
 windows_host="no"
+windows_sound="no"
+winamp_host="no"
 unix_sound="no"
 cd_player="no"
-case $host_os in
-  mingw*)
-    windows_host="yes"
-    cd_player="yes"
-    LIBS="$LIBS -lshlwapi"
-    ;;
-  linux* | freebsd*)
-    unix_sound="yes"
-    cd_player="yes"
-    ;;
-esac
+AS_CASE([$host_os],
+  [mingw*],
+    [AS_IF([test "x$enable_winamp" = "xyes"],
+           [windows_sound="no"],
+           [windows_sound="yes"])
+     windows_host="yes"
+     cd_player="yes"
+     LIBS="$LIBS -lshlwapi -lwinmm"],
+  [linux* | freebsd*],
+    [unix_sound="yes"
+     cd_player="yes"]
+)
 
 AM_CONFIG_HEADER(config.h)
 
@@ -54,6 +62,10 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
 
+AS_IF([test "x$enable_winamp" = "xyes"],
+      [AC_DEFINE([WINAMP], [1],
+                 [Define to build Winamp plugin])])
+
 dnl Test endian. This works even if cross compiling.
 AC_C_BIGENDIAN([AC_DEFINE([BIGENDIAN], [], [Host is big endian.])],
                [AC_DEFINE([LITTLEENDIAN], [], [Host is litle endian.])])
@@ -63,7 +75,8 @@ AC_CHECK_HEADERS([pwd.h])
 AC_CHECK_FUNCS([getpwuid getuid])
 
 dnl Operating system specific Automake conditionals
-AM_CONDITIONAL([COMPILE_WINDOWS], [test "x$windows_host" = "xyes"])
+AM_CONDITIONAL([COMPILE_WINDOWS], [test "x$windows_sound" = "xyes"])
+AM_CONDITIONAL([COMPILE_WINAMP], [test "x$enable_winamp" = "xyes"])
 AM_CONDITIONAL([COMPILE_UNIXSOUND], [test "x$unix_sound" = "xyes"])
 
 dnl Enable CD player interface if driver is available
@@ -91,11 +104,6 @@ AS_IF([test "x$with_portaudio" != xno],
     ])
   ])
 AM_CONDITIONAL([COMPILE_PORTAUDIO], [test "x$with_portaudio" = "xyes"])
-
-dnl Use libwinmm for sound and CD control on Windows
-if test "x$windows_host" = "xyes" ; then
-LIBS="$LIBS -lwinmm"
-fi
 
 dnl Don't use X on Microsoft Windows. Cross-compiling from
 dnl Cygwin coululd include /usr/include Cygwin headers.

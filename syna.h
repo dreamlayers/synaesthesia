@@ -29,13 +29,21 @@
 /*   For the incurably fiddle prone:   */
 
 /* log2 of sample size */
+#if defined(WINAMP)
+#define LogSize 9  // Winamp only gives 576
+#else
 #define LogSize 10 //was 9 
+#endif
 
 /* Brightness */
 #define Brightness 150
 
 /* Sample frequency*/
+#if defined(WINAMP)
+#define Frequency 44100
+#else
 #define Frequency 22050
+#endif
 
 #define DefaultWidth  200
 #define DefaultHeight 200
