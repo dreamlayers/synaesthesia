@@ -285,10 +285,7 @@ int main(int argc, char **argv)
 	   "    example: mpg123 -s file.mp3 |synaesthesia pipe 44100\n\n"
 	   "The following optional flags may be used\n"
 
-       "     --log-freq     logarithmic frequency scale\n"
-       "     --hamming      apply hamming window before FFT\n"
-       "     --truecolor    use 32bpp mode\n"
-       "     --addsq        add pixels by squaring\n"
+	   "     --classic      use original Synaesthesia 2.4 algorithms\n"
 	   "     --fullscreen   try to take over the whole screen\n"
 	   "     --width nnn    make the window this wide\n"
 	   "     --height nnn   make the window this high\n\n"
@@ -301,7 +298,7 @@ int main(int argc, char **argv)
 
   //Do flags
   bool fullscreen = false;
-  bool logfreq = false, hamming = false, truecolor = false, addsq = false;
+  bool logfreq = true, hamming = true, truecolor = true, addsq = true;
 #ifndef WINAMP
   for(int i=0;i<argc;)
     if (strcmp(argv[i],"--fullscreen") == 0) {
@@ -320,17 +317,11 @@ int main(int argc, char **argv)
       if (windHeight < 1)
         windHeight = DefaultHeight;
       chomp(argc,argv,i);
-    } else if (strcmp(argv[i],"--log-freq") == 0) {
-      logfreq = true;
-      chomp(argc,argv,i);
-    } else if (strcmp(argv[i],"--hamming") == 0) {
-      hamming = true;
-      chomp(argc,argv,i);
-    } else if (strcmp(argv[i],"--truecolor") == 0) {
-      truecolor = true;
-      chomp(argc,argv,i);
-    } else if (strcmp(argv[i],"--addsq") == 0) {
-      addsq = true;
+    } else if (strcmp(argv[i],"--classic") == 0) {
+      logfreq = false;
+      hamming = false;
+      truecolor = false;
+      addsq = false;
       chomp(argc,argv,i);
     } else
       i++;
