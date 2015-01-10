@@ -3,8 +3,8 @@ AC_CONFIG_SRCDIR([main.cc])
 AM_INIT_AUTOMAKE
 
 dnl Check for Emscripten
-AS_CASE([$CC],
-        [*emcc], [enable_emscripten="yes"],
+AS_CASE([$CXX],
+        [*em++], [enable_emscripten="yes"],
         [enable_emscripten="no"])
 
 AS_IF([test "x$enable_emscripten" = "xyes"],

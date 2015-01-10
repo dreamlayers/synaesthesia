@@ -27,7 +27,7 @@ endif
 
 if COMPILE_EMSCRIPTEN
 synaesthesia_SOURCES += emscripten.cc
-synaesthesia_LDFLAGS = -s EXPORTED_FUNCTIONS="['_main', '_getDataBuffer', '_displaySynaesthesia']"
+synaesthesia_LDFLAGS = -s EXPORTED_FUNCTIONS="['_main', '_getDataBuffer', '_displaySynaesthesia']" -s NO_EXIT_RUNTIME=1
 synaesthesia_LDFLAGS += --post-js soundplayer.js
 synaesthesia_DEPENDENCIES = soundplayer.js
 endif
