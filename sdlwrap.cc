@@ -34,6 +34,10 @@
 
 static SDL_Surface *surface;
 static SDL_Color sdlPalette[256];
+#if SDL_VERSION_ATLEAST(2,0,0)
+static SDL_Window *window;
+static SDL_Palette sdl2Palette = { 256, sdlPalette };
+#endif
 static bool fullscreen;
 static int scaling; //currently only supports 1, 2
 static int depth; // bits per pixel
@@ -45,6 +49,14 @@ static void sdlError(const char *str) {
   exit(1);
 }
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+static void createSurface() {
+  surface = SDL_GetWindowSurface(window);
+  if (surface == NULL) sdlError("at SDL_GetWindowSurface");
+
+  scaling = 1;
+}
+#else
 static void createSurface() {
   Uint32 videoflags = SDL_HWSURFACE | SDL_DOUBLEBUF |
                       SDL_RESIZABLE | (fullscreen?SDL_FULLSCREEN:0);
@@ -76,7 +88,8 @@ static void createSurface() {
   if (depth == 8)
     SDL_SetColors(surface, sdlPalette, 0, 256);
 }
-  
+#endif
+
 void SdlScreen::setPalette(unsigned char *palette) {
   if (depth == 32) {
     colorlookup = (uint32_t*)palette;
@@ -88,8 +101,11 @@ void SdlScreen::setPalette(unsigned char *palette) {
     sdlPalette[i].g = palette[i*3+1];
     sdlPalette[i].b = palette[i*3+2];
   }
-  
+#if SDL_VERSION_ATLEAST(2,0,0)
+  SDL_SetSurfacePalette(surface, &sdl2Palette);
+#else
   SDL_SetColors(surface, sdlPalette, 0, 256);
+#endif
 }
 
 bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
@@ -107,11 +123,24 @@ bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
   if ( SDL_Init(SDL_INIT_VIDEO) < 0 )
     sdlError("initializing SDL");
 
+#if SDL_VERSION_ATLEAST(2,0,0)
+  window = SDL_CreateWindow("Synaesthesia",
+                            fullscreen ? 0 : xHint,
+                            fullscreen ? 0 : yHint,
+                            outWidth, outHeight,
+                            (fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP :
+                             SDL_WINDOW_RESIZABLE) | SDL_WINDOW_SHOWN);
+  if (window == NULL) sdlError("at SDL_CreateWindow");
+#else
   SDL_WM_SetCaption("Synaesthesia","synaesthesia");
+#endif
 
   createSurface();
 
+// FIXME: There is no keyboard input with SDL2
+#if !SDL_VERSION_ATLEAST(2,0,0)
   SDL_EnableUNICODE(1);
+#endif
   SDL_ShowCursor(0);
 
   return true;
@@ -146,6 +175,21 @@ void SdlScreen::inputUpdate(int &mouseX,int &mouseY,int &mouseButtons,char &keyH
         mouseX = event.motion.x / scaling;
         mouseY = event.motion.y / scaling;
 	break;
+#if SDL_VERSION_ATLEAST(2,0,0)
+      case SDL_WINDOWEVENT:
+        switch (event.window.event) {
+        case SDL_WINDOWEVENT_LEAVE:
+          /* Lost focus, hide mouse */
+          mouseX = outWidth;
+          mouseY = outHeight;
+          break;
+        case SDL_WINDOWEVENT_RESIZED:
+          allocOutput(event.window.data1, event.window.data2);
+          createSurface();
+          break;
+        }
+        break;
+#else
       case SDL_ACTIVEEVENT :
         /* Lost focus, hide mouse */
         if (!event.active.gain) {
@@ -173,6 +217,7 @@ void SdlScreen::inputUpdate(int &mouseX,int &mouseY,int &mouseButtons,char &keyH
         allocOutput(event.resize.w,event.resize.h);
         createSurface();
         break;
+#endif
       case SDL_QUIT:
         keyHit = 'q';        
         return;
@@ -285,7 +330,11 @@ void SdlScreen::show(void) {
   SDL_UnlockSurface(surface);
 
   //SDL_UpdateRect(surface, 0, 0, 0, 0);
+#if SDL_VERSION_ATLEAST(2,0,0)
+  SDL_UpdateWindowSurface(window);
+#else
   SDL_Flip(surface);
+#endif
 }
 
 int SdlScreen::getDepth() {

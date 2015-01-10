@@ -105,25 +105,35 @@ AS_IF([test "x$with_portaudio" != xno],
   ])
 AM_CONDITIONAL([COMPILE_PORTAUDIO], [test "x$with_portaudio" = "xyes"])
 
-dnl Check for SDL
-SDL_VERSION=1.2.0
-AH_TEMPLATE([HAVE_SDL], [Set to 1 if SDL is available.])
-dnl Emscripten sdl-config does nothing, and running the another sdl-config
-dnl instead causes problems. With Emscripten, just assume SDL exists.
-AS_IF([test "x$enable_emscripten" = "xyes"],
-      [enable_sdl=1],
-      [AM_PATH_SDL($SDL_VERSION, [enable_sdl=1], [enable_sdl=0])])
-if test "x$enable_sdl" != x0 ; then
-AC_DEFINE([HAVE_SDL], [1])
-CFLAGS="$CFLAGS $SDL_CFLAGS"
-CXXFLAGS="$CXXFLAGS $SDL_CFLAGS"
-LIBS="$LIBS $SDL_LIBS"
-else
-AC_DEFINE([HAVE_SDL], [0])
-fi
-AM_CONDITIONAL([COMPILE_SDL], [test "x$enable_sdl" != "x0"])
-
 dnl Check for esound
 AC_CHECK_LIB(esd,esd_record_stream_fallback)
+
+dnl Check for SDL
+AC_ARG_WITH(sdl2, [AC_HELP_STRING([--with-sdl2=@<:@no/yes/path@:>@],
+                  [Build using SDL 2.0 instead of SDL 1.2.
+                   If using Emscripten, provide path to SDL-emscripten.])],
+                   [], [with_sdl2=no])
+AH_TEMPLATE([HAVE_SDL], [Set to 1 if SDL is available.])
+dnl Emscripten sdl-config does nothing, and running the another sdl-config
+dnl instead causes problems. Assume SDL 1.2 exists as part of Emscripten.
+dnl For SDL 2, a path needs to be specified.
+AS_IF([test "x$enable_emscripten" = "xyes"],
+      [enable_sdl=1
+       AS_IF([test "x$with_sdl2" != "xno"],
+             [CXXFLAGS="$CFLAGS -Wno-warn-absolute-paths -I$with_sdl2/include"
+              CXXFLAGS="$CXXFLAGS -Wno-warn-absolute-paths -I$with_sdl2/include"
+              LIBS="$LIBS -L$with_sdl2/build/.libs/ -lSDL2"])],
+      [AS_IF([test "x$with_sdl2" = "xno"],
+             [AM_PATH_SDL([1.2.0], [enable_sdl=1], [enable_sdl=0])],
+             [AM_PATH_SDL2([2.0.0], [enable_sdl=1], [enable_sdl=0])])
+       AS_IF([test "x$enable_sdl" != "x0"],
+             [CFLAGS="$CFLAGS $SDL_CFLAGS"
+              CXXFLAGS="$CXXFLAGS $SDL_CFLAGS"
+              LIBS="$LIBS $SDL_LIBS"])])
+AS_IF([test "x$enable_sdl" != "x0"],
+      [AC_DEFINE([HAVE_SDL], [1])],
+      [AC_DEFINE([HAVE_SDL], [0])])
+
+AM_CONDITIONAL([COMPILE_SDL], [test "x$enable_sdl" != "x0"])
 
 AC_OUTPUT(Makefile)
