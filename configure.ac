@@ -51,10 +51,7 @@ AS_CASE([$host_os],
 
 AM_CONFIG_HEADER(config.h)
 
-dnl Emscripten applies unsafe optimizations with -O3, and could break things.
-AS_IF([test "x$enable_emscripten" = "xyes"],
-      [default_cflags="-O2 -s FORCE_ALIGNED_MEMORY=1"],
-      [default_cflags="-O3"])
+default_cflags="-O3"
 : ${CXXFLAGS="$default_cflags"}
 : ${CFLAGS="$default_cflags"}
 
