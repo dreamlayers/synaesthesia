@@ -117,7 +117,7 @@ dnl For SDL 2, a path needs to be specified.
 AS_IF([test "x$enable_emscripten" = "xyes"],
       [enable_sdl=1
        AS_IF([test "x$with_sdl2" != "xno"],
-             [CXXFLAGS="$CFLAGS -Wno-warn-absolute-paths -I$with_sdl2/include"
+             [CFLAGS="$CFLAGS -Wno-warn-absolute-paths -I$with_sdl2/include"
               CXXFLAGS="$CXXFLAGS -Wno-warn-absolute-paths -I$with_sdl2/include"
               LIBS="$LIBS -L$with_sdl2/build/.libs/ -lSDL2"])],
       [AS_IF([test "x$with_sdl2" = "xno"],
