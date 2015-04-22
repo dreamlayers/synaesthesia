@@ -62,6 +62,10 @@ static void createSurface() {
 #else
 static void createSurface() {
   Uint32 videoflags = SDL_HWSURFACE | SDL_DOUBLEBUF |
+#if defined(EMSCRIPTEN) && !SDL_VERSION_ATLEAST(2,0,0)
+                      /* This enables more optimized 8 bpp */
+                      ((depth == 8) ? SDL_HWPALETTE : 0) |
+#endif
                       SDL_RESIZABLE | (fullscreen?SDL_FULLSCREEN:0);
 
 
@@ -140,12 +144,8 @@ bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
   EM_ASM(
     SDL.defaults.copyOnLock = false;
     SDL.defaults.discardOnLock = true;
+    SDL.defaults.opaqueFrontBuffer = false;
   );
-  if (depth == 32) {
-    EM_ASM(
-      SDL.defaults.opaqueFrontBuffer = false;
-    );
-  }
 #endif
 
   SDL_WM_SetCaption("Synaesthesia","synaesthesia");
