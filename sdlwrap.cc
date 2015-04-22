@@ -30,7 +30,10 @@
 
 #if HAVE_SDL
 
-#include "SDL.h"
+#include <SDL.h>
+#if defined(EMSCRIPTEN) && !SDL_VERSION_ATLEAST(2,0,0)
+#include <emscripten.h>
+#endif
 
 static SDL_Surface *surface;
 static SDL_Color sdlPalette[256];
@@ -132,6 +135,15 @@ bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
                              SDL_WINDOW_RESIZABLE) | SDL_WINDOW_SHOWN);
   if (window == NULL) sdlError("at SDL_CreateWindow");
 #else
+#ifdef EMSCRIPTEN
+  /* Optimize SDL 1 performance */
+  /* TODO: Set alpha to enable SDL.defaults.opaqueFrontBuffer = false; */
+  EM_ASM(
+    SDL.defaults.copyOnLock = false;
+    SDL.defaults.discardOnLock = true;
+  );
+#endif
+
   SDL_WM_SetCaption("Synaesthesia","synaesthesia");
 #endif
 
