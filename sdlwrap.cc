@@ -137,11 +137,15 @@ bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
 #else
 #ifdef EMSCRIPTEN
   /* Optimize SDL 1 performance */
-  /* TODO: Set alpha to enable SDL.defaults.opaqueFrontBuffer = false; */
   EM_ASM(
     SDL.defaults.copyOnLock = false;
     SDL.defaults.discardOnLock = true;
   );
+  if (depth == 32) {
+    EM_ASM(
+      SDL.defaults.opaqueFrontBuffer = false;
+    );
+  }
 #endif
 
   SDL_WM_SetCaption("Synaesthesia","synaesthesia");
@@ -371,7 +375,8 @@ static int getPixelShift(Uint32 mask) {
 
 void SdlScreen::getPixelFormat(int *rshift, unsigned long *rmask,
                                int *gshift, unsigned long *gmask,
-                               int *bshift, unsigned long *bmask) {
+                               int *bshift, unsigned long *bmask,
+                               int *ashift, unsigned long *amask) {
   SDL_PixelFormat *fmt = surface->format;
   *rshift = getPixelShift(fmt->Rmask);
   *rmask = fmt->Rmask;
@@ -379,6 +384,8 @@ void SdlScreen::getPixelFormat(int *rshift, unsigned long *rmask,
   *gmask = fmt->Gmask;
   *bshift = getPixelShift(fmt->Bmask);
   *bmask = fmt->Bmask;
+  *ashift = getPixelShift(fmt->Amask);
+  *amask = fmt->Amask;
 }
 
 #endif

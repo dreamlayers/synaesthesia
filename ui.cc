@@ -260,10 +260,11 @@ void setupPalette(double dummy=0.0) {
   bgGreen /= scale;
   bgBlue /= scale;
   
-  int rshift, gshift, bshift;
-  unsigned long rmask, gmask, bmask;
+  int rshift, gshift, bshift, ashift;
+  unsigned long rmask, gmask, bmask, amask;
   if (depth == 32) {
-    screen->getPixelFormat(&rshift, &rmask, &gshift, &gmask, &bshift, &bmask);
+    screen->getPixelFormat(&rshift, &rmask, &gshift, &gmask, &bshift, &bmask,
+                           &ashift, &amask);
   }
 
   int numpal = (depth == 8) ? 0x100 : 0x10000;
@@ -302,7 +303,8 @@ void setupPalette(double dummy=0.0) {
     if (depth == 32) {
       ((uint32_t*)palette)[i] = ((BOUND(int(red)) << rshift) & rmask) |
                                 ((BOUND(int(green)) << gshift) & gmask) |
-                                ((BOUND(int(blue)) << bshift) & bmask);
+                                ((BOUND(int(blue)) << bshift) & bmask) |
+                                amask;
     } else {
       palette[i*3+0] = BOUND(int(red));
       palette[i*3+1] = BOUND(int(green));

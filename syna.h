@@ -103,7 +103,8 @@ struct BaseScreen {
   virtual int getDepth() { return 8; }
   virtual void getPixelFormat(int *rshift, unsigned long *rmask,
                               int *gshift, unsigned long *gmask,
-                              int *bshift, unsigned long *bmask) { }
+                              int *bshift, unsigned long *bmask,
+                              int *ashift, unsigned long *amask) = 0;
 };
 
 struct SdlScreen : public BaseScreen {
@@ -117,7 +118,8 @@ struct SdlScreen : public BaseScreen {
   int getDepth();
   void getPixelFormat(int *rshift, unsigned long *rmask,
                       int *gshift, unsigned long *gmask,
-                      int *bshift, unsigned long *bmask);
+                      int *bshift, unsigned long *bmask,
+                      int *ashift, unsigned long *amask);
 };
 
 /* core */
