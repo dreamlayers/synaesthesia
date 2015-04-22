@@ -45,8 +45,8 @@
 #define Frequency 22050
 #endif
 
-#define DefaultWidth  200
-#define DefaultHeight 200
+#define DefaultWidth  400
+#define DefaultHeight 400
 
 /***************************************/
 
