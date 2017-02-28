@@ -29,8 +29,8 @@
 /*   For the incurably fiddle prone:   */
 
 /* log2 of sample size */
-#if defined(WINAMP)
-#define LogSize 9  // Winamp only gives 576
+#if defined(WINAMP) || defined(AUDACIOUS)
+#define LogSize 9  // Winamp only gives 576, Audacious 512
 #else
 #define LogSize 10 //was 9 
 #endif
@@ -39,7 +39,7 @@
 #define Brightness 150
 
 /* Sample frequency*/
-#if defined(WINAMP)
+#if defined(WINAMP) || defined(AUDACIOUS)
 #define Frequency 44100
 #else
 #define Frequency 22050
@@ -57,7 +57,7 @@
 
 typedef unsigned short sampleType;
 
-#elif defined(EMSCRIPTEN)
+#elif defined(EMSCRIPTEN) || defined(AUDACIOUS)
 
 typedef float sampleType;
 

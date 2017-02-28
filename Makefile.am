@@ -21,6 +21,13 @@ synaesthesia_LDFLAGS = -static-libgcc -static-libstdc++ \
                        -shared -Wl,-no-undefined
 endif
 
+if COMPILE_AUDACIOUS
+synaesthesia_SOURCES += audacious.cc
+synaesthesia_LDFLAGS = -shared -Wl,-no-undefined
+AM_CXXFLAGS = $(AUDACIOUS_CFLAGS)
+synaesthesia_LDADD = $(AUDACIOUS_LIBS)
+endif
+
 if COMPILE_PORTAUDIO
 synaesthesia_SOURCES += pawrap.cc
 endif

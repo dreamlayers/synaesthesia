@@ -252,6 +252,8 @@ void chomp(int &argc,char **argv,int argNum) {
 
 #ifdef WINAMP
 DWORD __stdcall synaesthesiaMain(LPVOID lpParameter)
+#elif defined(AUDACIOUS)
+void *synaesthesiaMain(void *arg)
 #else
 int main(int argc, char **argv)
 #endif
@@ -259,7 +261,7 @@ int main(int argc, char **argv)
   if (!loadConfig())
     saveConfig();
 
-#if !defined(EMSCRIPTEN) && !defined(WINAMP)
+#if !defined(EMSCRIPTEN) && !defined(WINAMP) && !defined(AUDACIOUS)
   if (argc == 1) {
     printf("SYNAESTHESIA " VERSION "\n\n"
            "Usage:\n"
@@ -299,7 +301,7 @@ int main(int argc, char **argv)
   //Do flags
   bool fullscreen = false;
   bool logfreq = true, hamming = true, truecolor = true, addsq = true;
-#ifndef WINAMP
+#if !defined(WINAMP) && !defined(AUDACIOUS)
   for(int i=0;i<argc;)
     if (strcmp(argv[i],"--fullscreen") == 0) {
       fullscreen = true;
@@ -325,7 +327,7 @@ int main(int argc, char **argv)
       chomp(argc,argv,i);
     } else
       i++;
-#endif /* !WINAMP */
+#endif /* !WINAMP && !AUDACIOUS */
 
 #ifdef HAVE_CD_PLAYER
   int configPlayTrack = -1;
@@ -336,7 +338,7 @@ int main(int argc, char **argv)
   playListLength = 0;
 #endif /* HAVE_CD_PLAYER */
   
-#if !defined(EMSCRIPTEN) && !defined(WINAMP)
+#if !defined(EMSCRIPTEN) && !defined(WINAMP) && !defined(AUDACIOUS)
   if (strcmp(argv[1],"line") == 0) soundSource = SourceLine;
 #ifdef HAVE_CD_PLAYER
   else if (strcmp(argv[1],"cd") == 0) soundSource = SourceCD;

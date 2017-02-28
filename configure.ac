@@ -29,13 +29,20 @@ AC_ARG_ENABLE(
   [AC_HELP_STRING([--enable-winamp=@<:@no/yes@:>@],
                   [compile Winamp visualization plugin])])
 
+AC_ARG_ENABLE(
+  [audacious],
+  [AC_HELP_STRING([--enable-audacious=@<:@no/yes@:>@],
+                  [compile Audacious visualization plugin])])
+
 dnl Detect the canonical host system
 AC_CANONICAL_HOST
 windows_host="no"
 windows_sound="no"
 winamp_host="no"
+audacious_host="no"
 unix_sound="no"
 cd_player="no"
+default_cflags="-O3"
 AS_CASE([$host_os],
   [mingw*],
     [AS_IF([test "x$enable_winamp" = "xyes"],
@@ -45,13 +52,16 @@ AS_CASE([$host_os],
      cd_player="yes"
      LIBS="$LIBS -lshlwapi -lwinmm"],
   [linux* | freebsd*],
-    [unix_sound="yes"
-     cd_player="yes"]
+    [AS_IF([test "x$enable_audacious" = "xyes"],
+           [unix_sound="no"
+            cd_player="no"
+            default_cflags="$default_cflags -fPIC"],
+           [unix_sound="yes"
+            cd_player="yes"])]
 )
 
 AM_CONFIG_HEADER(config.h)
 
-default_cflags="-O3"
 : ${CXXFLAGS="$default_cflags"}
 : ${CFLAGS="$default_cflags"}
 
@@ -62,6 +72,15 @@ AC_PROG_INSTALL
 AS_IF([test "x$enable_winamp" = "xyes"],
       [AC_DEFINE([WINAMP], [1],
                  [Define to build Winamp plugin])])
+
+AS_IF([test "x$enable_audacious" = "xyes"],
+      [AC_DEFINE([AUDACIOUS], [1],
+                 [Define to build Audacious plugin])
+       AX_PTHREAD()
+       LIBS="$PTHREAD_LIBS $LIBS"
+       CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+       CXXFLAGS="$CXXFLAGS $PTHREAD_CFLAGS"
+       PKG_CHECK_MODULES([AUDACIOUS], [audacious glib-2.0 dbus-glib-1 dbus-1])])
 
 dnl Test endian. This works even if cross compiling.
 AC_C_BIGENDIAN([AC_DEFINE([BIGENDIAN], [], [Host is big endian.])],
@@ -74,6 +93,7 @@ AC_CHECK_FUNCS([getpwuid getuid])
 dnl Operating system specific Automake conditionals
 AM_CONDITIONAL([COMPILE_WINDOWS], [test "x$windows_sound" = "xyes"])
 AM_CONDITIONAL([COMPILE_WINAMP], [test "x$enable_winamp" = "xyes"])
+AM_CONDITIONAL([COMPILE_AUDACIOUS], [test "x$enable_audacious" = "xyes"])
 AM_CONDITIONAL([COMPILE_UNIXSOUND], [test "x$unix_sound" = "xyes"])
 
 dnl Enable CD player interface if driver is available
