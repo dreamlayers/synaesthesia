@@ -22,6 +22,7 @@
 */
 
 #include <stdint.h>
+#include <string.h>
 #include <portaudio.h>
 #include "syna.h"
 
@@ -41,7 +42,27 @@ void openSound(SoundSource source, int inFrequency, char *dspName,
   if(err != paNoError) error("initializing PortAudio.");
 
   PaStreamParameters inputParameters;
-  inputParameters.device = Pa_GetDefaultInputDevice();
+
+  /* Search through devices to find one matching dspName.
+     However, don't use /dev/dsp via Portaudio. It works badly,
+     just like when you're using it directly. Excluding it
+     because it will be the default in the configuration file. */
+  if (dspName != NULL && strcmp(dspName, "/dev/dsp")) {
+    PaDeviceIndex numDevices = Pa_GetDeviceCount();
+    for (inputParameters.device = 0; inputParameters.device < numDevices;
+         inputParameters.device++) {
+      const PaDeviceInfo *deviceInfo = Pa_GetDeviceInfo(inputParameters.device);
+      if (deviceInfo != NULL && deviceInfo->name != NULL &&
+          !strcmp(deviceInfo->name, dspName)) break;
+    }
+    if (inputParameters.device == numDevices) {
+      warning("couldn't find selected sound device, using default");
+      inputParameters.device = Pa_GetDefaultInputDevice();
+    }
+  } else {
+    inputParameters.device = Pa_GetDefaultInputDevice();
+  }
+
   inputParameters.channelCount = 2;
   inputParameters.sampleFormat = paInt16; /* PortAudio uses CPU endianness. */
   inputParameters.suggestedLatency = Pa_GetDeviceInfo(inputParameters.device)->defaultLowInputLatency;
