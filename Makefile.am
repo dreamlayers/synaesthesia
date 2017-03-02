@@ -12,7 +12,7 @@ endif
 
 if COMPILE_WINDOWS
 synaesthesia_SOURCES += winsound.cc
-synaesthesia_LDFLAGS = -static-libgcc -static-libstdc++
+synaesthesia_LDFLAGS = -static
 endif
 
 if COMPILE_WINAMP

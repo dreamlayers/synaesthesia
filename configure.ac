@@ -68,6 +68,7 @@ AM_CONFIG_HEADER(config.h)
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
+PKG_PROG_PKG_CONFIG
 
 AS_IF([test "x$enable_winamp" = "xyes"],
       [AC_DEFINE([WINAMP], [1],
@@ -140,9 +141,17 @@ AS_IF([test "x$enable_emscripten" = "xyes"],
              [CFLAGS="$CFLAGS -Wno-warn-absolute-paths -I$with_sdl2/include"
               CXXFLAGS="$CXXFLAGS -Wno-warn-absolute-paths -I$with_sdl2/include"
               LIBS="$LIBS -L$with_sdl2/build/.libs/ -lSDL2"])],
-      [AS_IF([test "x$with_sdl2" = "xno"],
-             [AM_PATH_SDL([1.2.0], [enable_sdl=1], [enable_sdl=0])],
-             [AM_PATH_SDL2([2.0.0], [enable_sdl=1], [enable_sdl=0])])
+      dnl On Windows, first try to statically link SDL
+      [AS_IF([test "x$windows_host" = "xyes"],
+             [AS_IF([test "x$with_sdl2" = "xno"],
+                    [PKG_CHECK_MODULES_STATIC([SDL], [sdl], [enable_sdl=1], [enable_sdl=0])],
+                    [PKG_CHECK_MODULES_STATIC([SDL], [sdl2], [enable_sdl=1], [enable_sdl=0])])])
+       AS_IF([test "x$enable_sdl" != "x1"],
+             AS_IF([test "x$with_sdl2" = "xno"],
+                   [PKG_CHECK_MODULES([SDL], [sdl], [enable_sdl=1], [enable_sdl=0])],
+                   [PKG_CHECK_MODULES([SDL], [sdl2], [enable_sdl=1], [enable_sdl=0])]))
+       AC_SUBST([SDL_CFLAGS])
+       AC_SUBST([SDL_LIBS])
        AS_IF([test "x$enable_sdl" != "x0"],
              [CFLAGS="$CFLAGS $SDL_CFLAGS"
               CXXFLAGS="$CXXFLAGS $SDL_CFLAGS"
