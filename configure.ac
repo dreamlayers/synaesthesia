@@ -8,7 +8,7 @@ AS_CASE([$CXX],
         [enable_emscripten="no"])
 
 AS_IF([test "x$enable_emscripten" = "xyes"],
-      AC_MSG_NOTICE([auto-detected use of Emscripten]))
+      [AC_MSG_NOTICE([auto-detected use of Emscripten])])
 
 AC_ARG_ENABLE(
   [emscripten],
@@ -129,28 +129,24 @@ dnl Check for esound
 AC_CHECK_LIB(esd,esd_record_stream_fallback)
 
 dnl Check for SDL
-AC_ARG_WITH(sdl2, [AC_HELP_STRING([--with-sdl2=@<:@no/yes/path@:>@],
-                  [Build using SDL 2.0 instead of SDL 1.2.
-                   If using Emscripten, provide path to SDL-emscripten.])],
-                   [], [with_sdl2=no])
-dnl Emscripten sdl-config does nothing, and running the another sdl-config
-dnl instead causes problems. Assume SDL 1.2 exists as part of Emscripten.
-dnl For SDL 2, a path needs to be specified.
+AC_ARG_WITH(sdl2, [AC_HELP_STRING([--with-sdl2=@<:@no/yes@:>@],
+                  [Build using SDL 2 instead of SDL 1.2.])],
+                  [], [with_sdl2=no])
+dnl pkg-config SDL 2 detection would not work with Emscripten
 AS_IF([test "x$enable_emscripten" = "xyes"],
-      [enable_sdl=1
-       AS_IF([test "x$with_sdl2" != "xno"],
-             [CFLAGS="$CFLAGS -Wno-warn-absolute-paths -I$with_sdl2/include"
-              CXXFLAGS="$CXXFLAGS -Wno-warn-absolute-paths -I$with_sdl2/include"
-              LIBS="$LIBS -L$with_sdl2/build/.libs/ -lSDL2"])],
+      [AS_IF([test "x$with_sdl2" = "xyes"],
+             [CFLAGS="$CFLAGS -s USE_SDL=2"
+              CXXFLAGS="$CXXFLAGS -s USE_SDL=2"])],
       dnl On Windows, first try to statically link SDL
-      [AS_IF([test "x$windows_host" = "xyes"],
+      [enable_sdl=0
+       AS_IF([test "x$windows_host" = "xyes"],
              [AS_IF([test "x$with_sdl2" = "xno"],
                     [PKG_CHECK_MODULES_STATIC([SDL], [sdl], [enable_sdl=1], [enable_sdl=0])],
                     [PKG_CHECK_MODULES_STATIC([SDL], [sdl2], [enable_sdl=1], [enable_sdl=0])])])
        AS_IF([test "x$enable_sdl" != "x1"],
-             AS_IF([test "x$with_sdl2" = "xno"],
-                   [PKG_CHECK_MODULES([SDL], [sdl], [enable_sdl=1], [enable_sdl=0])],
-                   [PKG_CHECK_MODULES([SDL], [sdl2], [enable_sdl=1], [enable_sdl=0])]))
+             [AS_IF([test "x$with_sdl2" = "xno"],
+                    [PKG_CHECK_MODULES([SDL], [sdl], [enable_sdl=1], [enable_sdl=0])],
+                    [PKG_CHECK_MODULES([SDL], [sdl2], [enable_sdl=1], [enable_sdl=0])])])
        AC_SUBST([SDL_CFLAGS])
        AC_SUBST([SDL_LIBS])
        AS_IF([test "x$enable_sdl" != "x0"],
