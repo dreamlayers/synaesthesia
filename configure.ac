@@ -103,24 +103,27 @@ AS_IF([test "x$cd_player" = "xyes"],
                  [Define to build CD player interface])])
 
 dnl Possibility to use PortAudio instead of native sound
+AH_TEMPLATE([HAVE_PORTAUDIO], [Set to 1 if PortAudio is used.])
 AC_ARG_WITH([portaudio],
   [AS_HELP_STRING([--with-portaudio],
     [Use PortAudio instead of native sound])],
   [],
   [with_portaudio=no])
 
-AS_IF([test "x$with_portaudio" != xno],
-  [AC_CHECK_LIB([portaudio], [Pa_Initialize],
-    [with_portaudio=yes
-     LIBS="$LIBS -lportaudio"
-     AC_DEFINE([HAVE_PORTAUDIO], [1],
-               [Define to use PortAudio instead of native audio])
-    ],
-    [with_portaudio=no
-     AC_MSG_FAILURE(
-       [--with-portaudio was given, but test for PortAudio failed])
-    ])
-  ])
+AS_IF([test "x$with_portaudio" != "xno"],
+  dnl Try to statically link PortAudio in Windows
+  [AS_IF([test "x$windows_host" = "xyes"],
+         [PKG_CHECK_MODULES_STATIC([PortAudio], [portaudio-2.0],
+                                   [enable_portaudio=1], [enable_portaudio=0])],
+         [enable_portaudio=0])
+   AS_IF([test "x$enable_portaudio" != "x1"],
+         [PKG_CHECK_MODULES([PortAudio], [portaudio-2.0],
+                            [enable_portaudio=1],
+                            [AC_MSG_FAILURE([--with-portaudio was given, but test for PortAudio failed])])])
+   CFLAGS="$CFLAGS $PortAudio_CFLAGS"
+   CXXFLAGS="$CXXFLAGS $PortAudio_CFLAGS"
+   LIBS="$LIBS $PortAudio_LIBS"
+   AC_DEFINE([HAVE_PORTAUDIO], [1])])
 AM_CONDITIONAL([COMPILE_PORTAUDIO], [test "x$with_portaudio" = "xyes"])
 
 dnl Check for esound
