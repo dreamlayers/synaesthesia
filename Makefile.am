@@ -1,13 +1,9 @@
 bin_PROGRAMS = synaesthesia
 
-synaesthesia_SOURCES = main.cc core.cc ui.cc
+synaesthesia_SOURCES = main.cc core.cc ui.cc sdlwrap.cc
 
 if COMPILE_UNIXSOUND
 synaesthesia_SOURCES += sound.cc
-endif
-
-if COMPILE_SDL
-synaesthesia_SOURCES += sdlwrap.cc
 endif
 
 if COMPILE_WINDOWS

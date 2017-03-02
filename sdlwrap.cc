@@ -27,9 +27,6 @@
 #include <time.h>
 #include <string.h>
 #include "syna.h"
-
-#if HAVE_SDL
-
 #include <SDL.h>
 #if defined(EMSCRIPTEN) && !SDL_VERSION_ATLEAST(2,0,0)
 #include <emscripten.h>
@@ -387,5 +384,3 @@ void SdlScreen::getPixelFormat(int *rshift, unsigned long *rmask,
   *ashift = getPixelShift(fmt->Amask);
   *amask = fmt->Amask;
 }
-
-#endif

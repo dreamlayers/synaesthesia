@@ -19,8 +19,7 @@ dnl AC_CANONICAL_HOST fails to detect Emscripten.
 dnl This contains kludges to make things work.
 AS_IF([test "x$enable_emscripten" = "xyes"],
       [host_alias=none
-       ac_cv_exeext=.html
-       with_x=no])
+       ac_cv_exeext=.html])
 
 AM_CONDITIONAL([COMPILE_EMSCRIPTEN], [test "x$enable_emscripten" = "xyes"])
 
@@ -134,7 +133,6 @@ AC_ARG_WITH(sdl2, [AC_HELP_STRING([--with-sdl2=@<:@no/yes/path@:>@],
                   [Build using SDL 2.0 instead of SDL 1.2.
                    If using Emscripten, provide path to SDL-emscripten.])],
                    [], [with_sdl2=no])
-AH_TEMPLATE([HAVE_SDL], [Set to 1 if SDL is available.])
 dnl Emscripten sdl-config does nothing, and running the another sdl-config
 dnl instead causes problems. Assume SDL 1.2 exists as part of Emscripten.
 dnl For SDL 2, a path needs to be specified.
@@ -158,11 +156,7 @@ AS_IF([test "x$enable_emscripten" = "xyes"],
        AS_IF([test "x$enable_sdl" != "x0"],
              [CFLAGS="$CFLAGS $SDL_CFLAGS"
               CXXFLAGS="$CXXFLAGS $SDL_CFLAGS"
-              LIBS="$LIBS $SDL_LIBS"])])
-AS_IF([test "x$enable_sdl" != "x0"],
-      [AC_DEFINE([HAVE_SDL], [1])],
-      [AC_DEFINE([HAVE_SDL], [0])])
-
-AM_CONDITIONAL([COMPILE_SDL], [test "x$enable_sdl" != "x0"])
+              LIBS="$LIBS $SDL_LIBS"],
+             [AC_MSG_FAILURE([SDL is required for graphical output and user interface])])])
 
 AC_OUTPUT(Makefile)

@@ -40,9 +40,7 @@
 #include <Shlwapi.h>
 #endif
 #include <string.h>
-#if HAVE_SDL
 #include <SDL_main.h>
-#endif
 #include "syna.h"
 
 //void setupIcons();
