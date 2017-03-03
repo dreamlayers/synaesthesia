@@ -157,6 +157,7 @@ AS_IF([test "x$enable_emscripten" = "xyes"],
              [AC_MSG_FAILURE([SDL is required for graphical output and user interface])])])
 
 dnl Use icon if present
+AH_TEMPLATE([HAVE_ICON], [Set to 1 if window icon is compiled in and set by code.])
 AC_CHECK_FILE([synaesthesia.png],
               [AS_IF([test "x$windows_host" = "xyes"],
                      [AC_CHECK_PROG([has_icotool],[icotool],[yes],[no])
@@ -165,7 +166,16 @@ AC_CHECK_FILE([synaesthesia.png],
                             [use_icon=no])
                       AS_IF([test "x$use_icon" != "xyes"],
                             [AC_MSG_WARN([Icon found but need icotool from icoutils and windres to use it])])],
-                     [use_icon=0])])
+                     [test "x$enable_emscripten" = "xyes"], [use_icon=no],
+                     [AC_CHECK_PROG([has_convert],[convert],[yes],[no])
+                      AS_IF([test "x$has_convert" = "xyes"],
+                            [AC_CHECK_PROG([has_xxd],[xxd],[yes],[no])],
+                            [use_xxd=no])
+                      AS_IF([test "x$has_xxd" = "xyes"],
+                            [AC_DEFINE([HAVE_ICON], [1])
+                             use_icon=yes],
+                            [AC_MSG_WARN([Icon found but need convert from ImageMagick and xxd to use it])
+                             use_icon=no])])])
 AM_CONDITIONAL([COMPILE_ICON], [test "x$use_icon" = "xyes"])
 
 AC_OUTPUT(Makefile)

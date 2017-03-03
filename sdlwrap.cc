@@ -32,6 +32,10 @@
 #include <emscripten.h>
 #endif
 
+#ifdef HAVE_ICON
+extern unsigned char syn_icon_rgb[];
+#endif
+
 static SDL_Surface *surface;
 static SDL_Color sdlPalette[256];
 #if SDL_VERSION_ATLEAST(2,0,0)
@@ -127,6 +131,17 @@ bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
   if ( SDL_Init(SDL_INIT_VIDEO) < 0 )
     sdlError("initializing SDL");
 
+#ifdef HAVE_ICON
+  SDL_Surface *iconsurface =
+    SDL_CreateRGBSurfaceFrom(syn_icon_rgb, 64, 64, 24, 64*3,
+#ifdef LITTLEENDIAN
+                             0x0000ff, 0x00ff00, 0xff0000, 0
+#else
+                             0xff0000, 0x00ff00, 0x0000ff, 0
+#endif
+                             );
+#endif /* HAVE_ICON */
+
 #if SDL_VERSION_ATLEAST(2,0,0)
   window = SDL_CreateWindow("Synaesthesia",
                             fullscreen ? 0 : xHint,
@@ -144,9 +159,17 @@ bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
     SDL.defaults.opaqueFrontBuffer = false;
   );
 #endif
-
-  SDL_WM_SetCaption("Synaesthesia","synaesthesia");
 #endif
+
+#ifdef HAVE_ICON
+#if SDL_VERSION_ATLEAST(2,0,0)
+  SDL_SetWindowIcon(window, iconsurface);
+#else
+  /* Must be called before SDL_SetVideoMode() */
+  SDL_WM_SetIcon(iconsurface, NULL);
+#endif
+  SDL_FreeSurface(iconsurface);
+#endif /* HAVE_ICON */
 
   createSurface();
 
