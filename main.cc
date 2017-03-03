@@ -303,7 +303,7 @@ int main(int argc, char **argv)
   bool fullscreen = false;
   bool logfreq = true, hamming = true, truecolor = true, addsq = true;
 #if !defined(WINAMP) && !defined(AUDACIOUS)
-  for(int i=0;i<argc;)
+  for(int i=1;i<argc;)
     if (strcmp(argv[i],"--fullscreen") == 0) {
       fullscreen = true;
       chomp(argc,argv,i);
