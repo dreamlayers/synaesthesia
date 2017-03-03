@@ -90,6 +90,14 @@ typedef short sampleType;
 #define HAVE_PLAYBACK
 #endif
 
+#ifdef HAVE_PORTAUDIO
+#ifdef WIN32
+#define MONITOR_NAME "Stereo Mix"
+#elif defined(__linux__)
+#define MONITOR_NAME "pulse_monitor"
+#endif
+#endif /* HAVE_PORTAUDIO */
+
 void error(const char *str,bool syscall=false);
 void inline attempt(int x,const char *y,bool syscall=false) { if (x == -1) error(y,syscall); }
 void warning(const char *str,bool syscall=false);
@@ -209,6 +217,9 @@ enum SoundSource {
 #ifdef HAVE_LIBESD
   SourceESD,
 #endif /* HAVE_LIBESD */
+#ifdef MONITOR_NAME
+  SourceMonitor,
+#endif /* MONITOR_NAME */
 };
 
 #ifdef HAVE_CD_PLAYER

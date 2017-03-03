@@ -102,6 +102,9 @@ static int windX, windY, windWidth, windHeight;
 static char dspName[80];
 static char mixerName[80];
 static char cdromName[80];
+#ifdef MONITOR_NAME
+static char monitorName[80];
+#endif
 
 void setStateToDefaults() {
   fadeMode = Stars;
@@ -150,6 +153,9 @@ bool loadConfig() {
   strcpy(dspName, "/dev/dsp");
   strcpy(mixerName, "/dev/mixer");
   strcpy(cdromName, "/dev/cdrom");
+#ifdef MONITOR_NAME
+  strcpy(monitorName, MONITOR_NAME);
+#endif
 
   char *fileName = getConfigFileName();
   if (fileName == NULL) return false;
@@ -173,6 +179,9 @@ bool loadConfig() {
       sscanf(line,"dsp %[^\r\n]",dspName);
       sscanf(line,"mixer %[^\r\n]",mixerName);
       sscanf(line,"cdrom %[^\r\n]",cdromName);
+#ifdef MONITOR_NAME
+      sscanf(line,"monitor %[^\r\n]",monitorName);
+#endif
       if (strncmp(line,"fade",4) == 0) fadeMode = Stars;
       if (strncmp(line,"wave",4) == 0) fadeMode = Wave;
       if (strncmp(line,"heat",4) == 0) fadeMode = Flame;
@@ -237,6 +246,9 @@ void saveConfig() {
     fprintf(f,"dsp %s\n",dspName);
     fprintf(f,"mixer %s\n",mixerName);
     fprintf(f,"cdrom %s\n",cdromName);
+#ifdef MONITOR_NAME
+    fprintf(f,"monitor %s\n",monitorName);
+#endif
     fclose(f);
   } else {
     fprintf(stderr,"Couldn't open config file to save settings.\n");
@@ -264,6 +276,10 @@ int main(int argc, char **argv)
   if (argc == 1) {
     printf("SYNAESTHESIA " VERSION "\n\n"
            "Usage:\n"
+
+#ifdef MONITOR_NAME
+           "  synaesthesia\n    - listen to computer playback and display help\n"
+#endif
 
 #ifdef HAVE_CD_PLAYER
            "  synaesthesia cd\n    - listen to a CD\n"
@@ -295,7 +311,9 @@ int main(int argc, char **argv)
            "For more information, see http://logarithmic.net/pfh/Synaesthesia\n\n"
 	   "Enjoy!\n"
 	   );
+#ifndef MONITOR_NAME
     return 1;
+#endif
   }
 #endif
 
@@ -338,8 +356,12 @@ int main(int argc, char **argv)
 #ifdef HAVE_CD_PLAYER
   playListLength = 0;
 #endif /* HAVE_CD_PLAYER */
-  
+
 #if !defined(EMSCRIPTEN) && !defined(WINAMP) && !defined(AUDACIOUS)
+#ifdef MONITOR_NAME
+  if (argc == 1) soundSource = SourceMonitor;
+  else
+#endif
   if (strcmp(argv[1],"line") == 0) soundSource = SourceLine;
 #ifdef HAVE_CD_PLAYER
   else if (strcmp(argv[1],"cd") == 0) soundSource = SourceCD;
@@ -383,7 +405,11 @@ int main(int argc, char **argv)
     soundSource = SourceLine;
 #endif
 
-  openSound(soundSource, inFrequency, dspName, mixerName); 
+  openSound(soundSource, inFrequency,
+#ifdef MONITOR_NAME
+            (soundSource == SourceMonitor) ? monitorName :
+#endif
+            dspName, mixerName);
   
   setupMixer(volume);
 

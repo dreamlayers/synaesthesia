@@ -49,11 +49,20 @@ void openSound(SoundSource source, int inFrequency, char *dspName,
      because it will be the default in the configuration file. */
   if (dspName != NULL && strcmp(dspName, "/dev/dsp")) {
     PaDeviceIndex numDevices = Pa_GetDeviceCount();
+#ifdef WIN32
+    unsigned int namelen = strlen(dspName);
+#endif
     for (inputParameters.device = 0; inputParameters.device < numDevices;
          inputParameters.device++) {
       const PaDeviceInfo *deviceInfo = Pa_GetDeviceInfo(inputParameters.device);
       if (deviceInfo != NULL && deviceInfo->name != NULL &&
-          !strcmp(deviceInfo->name, dspName)) break;
+#ifdef WIN32
+          /* Allow substring matches, for eg. "Stereo Mix (Sound card name)" */
+          !strncmp(deviceInfo->name, dspName, namelen)
+#else
+          !strcmp(deviceInfo->name, dspName)
+#endif
+          ) break;
     }
     if (inputParameters.device == numDevices) {
       warning("couldn't find selected sound device, using default");
