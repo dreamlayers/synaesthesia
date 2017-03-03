@@ -86,6 +86,10 @@ typedef short sampleType;
 #endif
 #endif /* !defined(BIGENDIAN) && !defined(LITTLEENDIAN) */
 
+#if !defined(HAVE_PORTAUDIO) && !defined(WIN32)
+#define HAVE_PLAYBACK
+#endif
+
 void error(const char *str,bool syscall=false);
 void inline attempt(int x,const char *y,bool syscall=false) { if (x == -1) error(y,syscall); }
 void warning(const char *str,bool syscall=false);
@@ -199,7 +203,9 @@ enum SoundSource {
 #ifdef HAVE_CD_PLAYER
   SourceCD,
 #endif /* HAVE_CD_PLAYER */
+#ifdef HAVE_PLAYBACK
   SourcePipe,
+#endif /* HAVE_PLAYBACK */
 #ifdef HAVE_LIBESD
   SourceESD,
 #endif /* HAVE_LIBESD */

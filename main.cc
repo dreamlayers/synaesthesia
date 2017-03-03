@@ -279,12 +279,14 @@ int main(int argc, char **argv)
 	   "    - play these CD tracks one after the other\n"
 #endif /* HAVE_CD_PLAYER */
 
+#ifdef HAVE_PLAYBACK
            "  <another program> |synaesthesia pipe <frequency>\n"
 	   "    - send output of program to sound card as well as displaying it.\n"
 	   "      (must be 16-bit stereo sound)\n"
-	   "    example: mpg123 -s file.mp3 |synaesthesia pipe 44100\n\n"
-	   "The following optional flags may be used\n"
+	   "    example: mpg123 -s file.mp3 |synaesthesia pipe 44100\n"
+#endif /* HAVE_PLAYBACK */
 
+	   "\nThe following optional flags may be used\n"
 	   "     --classic      use original Synaesthesia 2.4 algorithms\n"
 	   "     --fullscreen   try to take over the whole screen\n"
 	   "     --width nnn    make the window this wide\n"
@@ -345,12 +347,14 @@ int main(int argc, char **argv)
 #if HAVE_LIBESD
   else if (strcmp(argv[1],"esd") == 0) soundSource = SourceESD;
 #endif
-  
+
+#ifdef HAVE_PLAYBACK
   else if (strcmp(argv[1],"pipe") == 0) {
     if (argc < 3 || sscanf(argv[2],"%d",&inFrequency) != 1)
       error("frequency not specified");
     soundSource = SourcePipe;
   }
+#endif
     else
 #ifdef HAVE_CD_PLAYER
     if (sscanf(argv[1],"%d",&configPlayTrack) != 1)
