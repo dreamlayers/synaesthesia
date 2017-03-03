@@ -58,3 +58,6 @@ synaesthesia_LDFLAGS = -s EXPORTED_FUNCTIONS="['_main', '_getDataBuffer', '_disp
 synaesthesia_LDFLAGS += --post-js soundplayer.js
 synaesthesia_DEPENDENCIES = soundplayer.js
 endif
+
+CLEANFILES = synaesthesia.ico syn_icon.rgb syn_icon_rgb.cc \
+             synaesthesia.js synaesthesia.html.mem a.out.js
