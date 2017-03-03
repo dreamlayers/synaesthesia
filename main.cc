@@ -169,9 +169,10 @@ bool loadConfig() {
       sscanf(line,"fggreen %lf",&fgGreenSlider);
       sscanf(line,"bgred %lf",&bgRedSlider);
       sscanf(line,"bggreen %lf",&bgGreenSlider);
-      sscanf(line,"dsp %s",dspName);
-      sscanf(line,"mixer %s",mixerName);
-      sscanf(line,"cdrom %s",cdromName);
+      /* These are not buffer overflow risks because fgets() limits size */
+      sscanf(line,"dsp %[^\r\n]",dspName);
+      sscanf(line,"mixer %[^\r\n]",mixerName);
+      sscanf(line,"cdrom %[^\r\n]",cdromName);
       if (strncmp(line,"fade",4) == 0) fadeMode = Stars;
       if (strncmp(line,"wave",4) == 0) fadeMode = Wave;
       if (strncmp(line,"heat",4) == 0) fadeMode = Flame;
