@@ -6,15 +6,28 @@ if COMPILE_UNIXSOUND
 synaesthesia_SOURCES += sound.cc
 endif
 
-if COMPILE_WINDOWS
+if COMPILE_WINSOUND
 synaesthesia_SOURCES += winsound.cc
+endif
+
+if COMPILE_WINDOWS
 synaesthesia_LDFLAGS = -static
+
+if COMPILE_ICON
+synaesthesia_SOURCES += syn-res.rc
+synaesthesia_DEPENDENCIES = synaesthesia.ico
+
+syn-res.o: syn-res.rc synaesthesia.ico
+	windres -o $@ $<
+
+synaesthesia.ico: synaesthesia.png
+	icotool -c -o $@ $^
 endif
 
 if COMPILE_WINAMP
 synaesthesia_SOURCES += winamp.cc
-synaesthesia_LDFLAGS = -static-libgcc -static-libstdc++ \
-                       -shared -Wl,-no-undefined
+synaesthesia_LDFLAGS += -shared -Wl,-no-undefined
+endif
 endif
 
 if COMPILE_AUDACIOUS

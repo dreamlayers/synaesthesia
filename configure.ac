@@ -91,7 +91,8 @@ AC_CHECK_HEADERS([pwd.h])
 AC_CHECK_FUNCS([getpwuid getuid])
 
 dnl Operating system specific Automake conditionals
-AM_CONDITIONAL([COMPILE_WINDOWS], [test "x$windows_sound" = "xyes"])
+AM_CONDITIONAL([COMPILE_WINDOWS], [test "x$windows_host" = "xyes"])
+AM_CONDITIONAL([COMPILE_WINSOUND], [test "x$windows_sound" = "xyes"])
 AM_CONDITIONAL([COMPILE_WINAMP], [test "x$enable_winamp" = "xyes"])
 AM_CONDITIONAL([COMPILE_AUDACIOUS], [test "x$enable_audacious" = "xyes"])
 AM_CONDITIONAL([COMPILE_UNIXSOUND], [test "x$unix_sound" = "xyes"])
@@ -154,5 +155,17 @@ AS_IF([test "x$enable_emscripten" = "xyes"],
               CXXFLAGS="$CXXFLAGS $SDL_CFLAGS"
               LIBS="$LIBS $SDL_LIBS"],
              [AC_MSG_FAILURE([SDL is required for graphical output and user interface])])])
+
+dnl Use icon if present
+AC_CHECK_FILE([synaesthesia.png],
+              [AS_IF([test "x$windows_host" = "xyes"],
+                     [AC_CHECK_PROG([has_icotool],[icotool],[yes],[no])
+                      AS_IF([test "x$has_icotool" = "xyes"],
+                            [AC_CHECK_PROG([use_icon],[windres],[yes],[no])],
+                            [use_icon=no])
+                      AS_IF([test "x$use_icon" != "xyes"],
+                            [AC_MSG_WARN([Icon found but need icotool from icoutils and windres to use it])])],
+                     [use_icon=0])])
+AM_CONDITIONAL([COMPILE_ICON], [test "x$use_icon" = "xyes"])
 
 AC_OUTPUT(Makefile)
