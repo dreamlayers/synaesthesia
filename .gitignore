@@ -45,3 +45,5 @@ libportaudio-2.dll
 synaesthesia.ico
 syn_icon.rgb
 syn_icon_rgb.cc
+stderr.txt
+stdout.txt

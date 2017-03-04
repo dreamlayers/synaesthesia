@@ -148,6 +148,11 @@ AS_IF([test "x$enable_emscripten" = "xyes"],
              [AS_IF([test "x$with_sdl2" = "xno"],
                     [PKG_CHECK_MODULES([SDL], [sdl], [enable_sdl=1], [enable_sdl=0])],
                     [PKG_CHECK_MODULES([SDL], [sdl2], [enable_sdl=1], [enable_sdl=0])])])
+       dnl Windows SDL does not ship with pkg-config .pc file.
+       dnl Builds can still fail when static linking in Windows.
+       AS_IF([test "x$enable_sdl" != "x1"],
+             [AS_IF([test "x$with_sdl2" = "xno"],
+                    [AM_PATH_SDL([1.2.0], [enable_sdl=1], [enable_sdl=0])])])
        AC_SUBST([SDL_CFLAGS])
        AC_SUBST([SDL_LIBS])
        AS_IF([test "x$enable_sdl" != "x0"],
