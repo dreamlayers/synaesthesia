@@ -680,7 +680,8 @@ bool interfaceGo() {
     cdCheckCountDown -= (countDown ? 10 : 1);
 #endif /* HAVE_CD_PLAYER */
 
-  if (mouseClick && action == NotASymbol && !(visibleMask&~ALL)) {
+  if (mouseClick && (mouseButtons & SYN_DBL_CLICK) &&
+      action == NotASymbol && !(visibleMask&~ALL)) {
     screen->toggleFullScreen();
     screen->inputUpdate(mouseX,mouseY,mouseButtons,keyHit);
     lastX = mouseX;

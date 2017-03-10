@@ -200,10 +200,26 @@ void SdlScreen::inputUpdate(int &mouseX,int &mouseY,int &mouseButtons,char &keyH
     switch (event.type) {
       case SDL_MOUSEBUTTONUP:
       case SDL_MOUSEBUTTONDOWN:
-        if ( event.button.state == SDL_PRESSED ) 
+        if ( event.button.state == SDL_PRESSED ) {
+#if SDL_VERSION_ATLEAST(2,0,2)
+          if (event.button.clicks == 2) {
+              mouseButtons |= SYN_DBL_CLICK;
+          }
+#else
+          // Earlier SDL versions don't report double clicks
+          static Uint32 dblclicktm = 0;
+          Uint32 clicktime = SDL_GetTicks();
+          // Like !SDL_TICKS_PASSED(), which may not be available
+          if ((Sint32)(dblclicktm - clicktime) > 0) {
+            mouseButtons |= SYN_DBL_CLICK;
+          }
+          dblclicktm = clicktime + 200;
+#endif // !SDL_VERSION_ATLEAST(2,0,2)
           mouseButtons |= 1 << event.button.button;
-        else	
+        } else {
           mouseButtons &= ~( 1 << event.button.button );
+          mouseButtons &= ~SYN_DBL_CLICK;
+        }
         mouseX = event.button.x / scaling;
         mouseY = event.button.y / scaling;
 	break;

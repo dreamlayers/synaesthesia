@@ -104,6 +104,7 @@ void warning(const char *str,bool syscall=false);
 void inline attemptNoDie(int x,const char *y,bool syscall=false) { if (x == -1) warning(y,syscall); }
 
 /* *wrap */
+#define SYN_DBL_CLICK (1 << 30)
 struct BaseScreen {
   virtual bool init(int xHint, int yHint, int widthHint, int heightHint,
                     bool fullscreen, int depth = 8) = 0;
