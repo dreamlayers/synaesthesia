@@ -13,7 +13,7 @@ endif
 if COMPILE_WINDOWS
 synaesthesia_LDFLAGS = -static
 
-if COMPILE_ICON
+if COMPILE_WINICON
 synaesthesia_SOURCES += syn-res.rc
 synaesthesia_DEPENDENCIES = synaesthesia.ico
 
@@ -30,9 +30,9 @@ if COMPILE_WINAMP
 synaesthesia_SOURCES += winamp.cc
 synaesthesia_LDFLAGS += -shared -Wl,-no-undefined
 endif
+endif COMPILE_WINDOWS
 
-else !COMPILE_WINDOWS
-if COMPILE_ICON
+if COMPILE_SDLICON
 syn_icon.rgb: synaesthesia.png
 	convert $< -resize "64x64!" $@
 
@@ -40,8 +40,7 @@ syn_icon_rgb.cc: syn_icon.rgb
 	xxd -i $< > $@
 
 nodist_synaesthesia_SOURCES = syn_icon_rgb.cc
-endif COMPILE_ICON
-endif !COMPILE_WINDOWS
+endif COMPILE_SDLICON
 
 if COMPILE_AUDACIOUS
 synaesthesia_SOURCES += audacious.cc

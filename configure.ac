@@ -167,20 +167,23 @@ AC_CHECK_FILE([synaesthesia.png],
               [AS_IF([test "x$windows_host" = "xyes"],
                      [AC_CHECK_PROG([has_icotool],[icotool],[yes],[no])
                       AS_IF([test "x$has_icotool" = "xyes"],
-                            [AC_CHECK_PROG([use_icon],[windres],[yes],[no])],
-                            [use_icon=no])
-                      AS_IF([test "x$use_icon" != "xyes"],
+                            [AC_CHECK_PROG([windows_icon],[windres],[yes],[no])],
+                            [windows_icon=no])
+                      AS_IF([test "x$windows_icon" != "xyes"],
                             [AC_MSG_WARN([Icon found but need icotool from icoutils and windres to use it])])],
-                     [test "x$enable_emscripten" = "xyes"], [use_icon=no],
+                      [windows_icon=0])
+               AS_IF([test "x$enable_emscripten" = "xyes"], [sdl_icon=no],
+                     [test "x$windows_host" = "xyes" -a "x$with_sdl2" != "xno"], [sdl_icon=no],
                      [AC_CHECK_PROG([has_convert],[convert],[yes],[no])
                       AS_IF([test "x$has_convert" = "xyes"],
                             [AC_CHECK_PROG([has_xxd],[xxd],[yes],[no])],
                             [use_xxd=no])
                       AS_IF([test "x$has_xxd" = "xyes"],
                             [AC_DEFINE([HAVE_ICON], [1])
-                             use_icon=yes],
+                             sdl_icon=yes],
                             [AC_MSG_WARN([Icon found but need convert from ImageMagick and xxd to use it])
-                             use_icon=no])])])
-AM_CONDITIONAL([COMPILE_ICON], [test "x$use_icon" = "xyes"])
+                             sdl_icon=no])])])
+AM_CONDITIONAL([COMPILE_WINICON], [test "x$windows_icon" = "xyes"])
+AM_CONDITIONAL([COMPILE_SDLICON], [test "x$sdl_icon" = "xyes"])
 
 AC_OUTPUT(Makefile)
