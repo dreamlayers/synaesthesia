@@ -17,8 +17,10 @@ if COMPILE_ICON
 synaesthesia_SOURCES += syn-res.rc
 synaesthesia_DEPENDENCIES = synaesthesia.ico
 
-syn-res.o: syn-res.rc synaesthesia.ico
+.rc.o:
 	windres -o $@ $<
+
+syn-res.o: synaesthesia.ico
 
 synaesthesia.ico: synaesthesia.png
 	icotool -c -o $@ $^
