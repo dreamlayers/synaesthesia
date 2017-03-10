@@ -161,6 +161,10 @@ bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
 #endif
 #endif
 
+#if !SDL_VERSION_ATLEAST(2,0,0)
+  SDL_WM_SetCaption("Synaesthesia", "Synaesthesia");
+#endif
+
 #ifdef HAVE_ICON
 #if SDL_VERSION_ATLEAST(2,0,0)
   SDL_SetWindowIcon(window, iconsurface);
