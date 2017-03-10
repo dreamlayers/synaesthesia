@@ -144,10 +144,10 @@ bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
 
 #if SDL_VERSION_ATLEAST(2,0,0)
   window = SDL_CreateWindow("Synaesthesia",
-                            fullscreen ? 0 : xHint,
-                            fullscreen ? 0 : yHint,
+                            fullscreen ? SDL_WINDOWPOS_UNDEFINED : xHint,
+                            fullscreen ? SDL_WINDOWPOS_UNDEFINED : yHint,
                             outWidth, outHeight,
-                            (fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP :
+                            (fullscreen ? SDL_WINDOW_FULLSCREEN :
                              SDL_WINDOW_RESIZABLE) | SDL_WINDOW_SHOWN);
   if (window == NULL) sdlError("at SDL_CreateWindow");
 #else
@@ -192,7 +192,11 @@ void SdlScreen::end(void) {
 
 void SdlScreen::toggleFullScreen(void) {
   fullscreen = !fullscreen;
+#if SDL_VERSION_ATLEAST(2,0,0)
+  SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
+#else
   createSurface();
+#endif
 }
 
 void SdlScreen::inputUpdate(int &mouseX,int &mouseY,int &mouseButtons,char &keyHit) {    
