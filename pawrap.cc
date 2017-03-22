@@ -71,6 +71,9 @@ void openSound(SoundSource source, int inFrequency, char *dspName,
   } else {
     inputParameters.device = Pa_GetDefaultInputDevice();
   }
+  if (inputParameters.device == paNoDevice) {
+    error("couldn't find default sound input device");
+  }
 
   inputParameters.channelCount = 2;
   inputParameters.sampleFormat = paInt16; /* PortAudio uses CPU endianness. */
