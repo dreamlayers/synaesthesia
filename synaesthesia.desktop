@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Synaesthesia
+GenericName=Visualize music
+Icon=synaesthesia
+Exec=synaesthesia
+Terminal=false
+Type=Application
+Categories=Audio;
+StartupNotify=false

@@ -62,3 +62,13 @@ endif
 
 CLEANFILES = synaesthesia.ico syn_icon.rgb syn_icon_rgb.cc \
              synaesthesia.js synaesthesia.html.mem a.out.js
+
+install:
+	-xdg-icon-resource install --novendor --context apps \
+	                           --size 256 synaesthesia.png synaesthesia
+	-xdg-desktop-menu install --novendor synaesthesia.desktop
+
+uninstall:
+	-xdg-icon-resource uninstall --novendor --context apps \
+	                             --size 256 synaesthesia
+	-xdg-desktop-menu uninstall --novendor synaesthesia.desktop
