@@ -29,7 +29,8 @@
 /*   For the incurably fiddle prone:   */
 
 /* log2 of sample size */
-#if defined(WINAMP) || defined(AUDACIOUS)
+#if defined(WINAMP)
+// || defined(AUDACIOUS)
 #define LogSize 9  // Winamp only gives 576, Audacious 512
 #else
 #define LogSize 10 //was 9 

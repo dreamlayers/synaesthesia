@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<addon
+  id="visualization.rgblamp"
+  version="1.0.0"
+  name="RGBlamp"
+  provider-name="Boris Gjenero">
+  <extension
+    point="xbmc.player.musicviz"
+    library_linux="rgblamp.vis"
+    library_wingl="rgblamp_win32.vis"
+    library_osx="rgblamp.vis"/>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en">RGBlamp</summary>
+    <description lang="en">RGB lamp visualization for Kodi</description>
+    <platform>linux osx wingl</platform>
+  </extension>
+</addon>

@@ -445,7 +445,8 @@ int main(int argc, char **argv)
 /* With Emscripten, main() returns after initialization, and
  * further calls come from JavaScript via displaySynaesthesia().
  */
-#ifndef EMSCRIPTEN
+#if 0
+//ndef EMSCRIPTEN
   time_t timer = time(NULL);
   
   int frames = 0;
@@ -483,6 +484,23 @@ int main(int argc, char **argv)
     printf("Frames per second: %f\n", double(frames) / timer);
 #endif /* !EMSCRIPTEN */
   return 0;
+}
+
+void synaesthesiaLoop(void)
+{
+    fade();
+
+    coreGo();
+
+    interfaceGo();
+
+    screen->show(); 
+#if 0
+    if (-1 == coreGo())
+      break;
+
+    if (interfaceGo()) break;
+#endif
 }
 
 void error(const char *str, bool syscall) {
