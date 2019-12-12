@@ -119,8 +119,10 @@ void SdlScreen::setPalette(unsigned char *palette) {
 bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
                      int bpp)
 {
+#if !SDL_VERSION_ATLEAST(2,0,0)
   outWidth = width;
   outHeight = height;
+#endif
   ::fullscreen = fullscreen;
   depth = bpp;
 
@@ -146,10 +148,14 @@ bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
   window = SDL_CreateWindow("Synaesthesia",
                             fullscreen ? SDL_WINDOWPOS_UNDEFINED : xHint,
                             fullscreen ? SDL_WINDOWPOS_UNDEFINED : yHint,
-                            outWidth, outHeight,
+                            width, height,
                             (fullscreen ? SDL_WINDOW_FULLSCREEN :
                              SDL_WINDOW_RESIZABLE) | SDL_WINDOW_SHOWN);
   if (window == NULL) sdlError("at SDL_CreateWindow");
+
+  /* Raspberry Pi console will set window to size of full screen,
+   * and not give a resize event. */
+  SDL_GetWindowSize(window, &outWidth, &outHeight);
 #else
 #ifdef EMSCRIPTEN
   /* Optimize SDL 1 performance */
