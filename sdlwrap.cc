@@ -37,10 +37,11 @@
 extern unsigned char syn_icon_rgb[];
 #endif
 
-static SDL_Surface *surface;
 static SDL_Color sdlPalette[256];
 #if SDL_VERSION_ATLEAST(2,0,0)
 static SDL_Window *window;
+static SDL_Renderer *renderer;
+static SDL_Texture *texture;
 static SDL_Palette sdl2Palette = { 256, sdlPalette };
 #endif
 static bool fullscreen;
@@ -56,12 +57,12 @@ static void sdlError(const char *str) {
 
 #if SDL_VERSION_ATLEAST(2,0,0)
 static void createSurface() {
-  surface = SDL_GetWindowSurface(window);
-  if (surface == NULL) sdlError("at SDL_GetWindowSurface");
-
-  scaling = 1;
+  texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
+                              SDL_TEXTUREACCESS_STREAMING,
+                              outWidth, outHeight);
+  if (texture == NULL) sdlError("at SDL_CreateTexture");
 }
-#else
+#else // !SDL_VERSION_ATLEAST(2,0,0)
 static void createSurface() {
   Uint32 videoflags = SDL_HWSURFACE | SDL_DOUBLEBUF |
 #if defined(EMSCRIPTEN) && !SDL_VERSION_ATLEAST(2,0,0)
@@ -104,7 +105,7 @@ void SdlScreen::setPalette(unsigned char *palette) {
     colorlookup = (uint32_t*)palette;
     return;
   }
-
+#if 0
   for(int i=0;i<256;i++) {
     sdlPalette[i].r = palette[i*3+0];
     sdlPalette[i].g = palette[i*3+1];
@@ -114,6 +115,7 @@ void SdlScreen::setPalette(unsigned char *palette) {
   SDL_SetSurfacePalette(surface, &sdl2Palette);
 #else
   SDL_SetColors(surface, sdlPalette, 0, 256);
+#endif
 #endif
 }
 
@@ -127,7 +129,7 @@ bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
   ::fullscreen = fullscreen;
   depth = bpp;
 
-  if (depth != 8 && depth != 32)
+  if (/* depth != 8 && FIXME SDL Texture */ depth != 32)
     return false;
 
   /* Initialize SDL */
@@ -146,6 +148,7 @@ bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
 #endif /* HAVE_ICON */
 
 #if SDL_VERSION_ATLEAST(2,0,0)
+  scaling = 1; // FIXME make this variable
   window = SDL_CreateWindow("Synaesthesia",
                             fullscreen ? SDL_WINDOWPOS_UNDEFINED : xHint,
                             fullscreen ? SDL_WINDOWPOS_UNDEFINED : yHint,
@@ -157,6 +160,12 @@ bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
   /* Raspberry Pi console will set window to size of full screen,
    * and not give a resize event. */
   SDL_GetWindowSize(window, &outWidth, &outHeight);
+  outWidth /= scaling;
+  outHeight /= scaling;
+
+  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+  if (renderer == NULL) sdlError("at SDL_CreateRenderer");
+
 #else
 #ifdef EMSCRIPTEN
   /* Optimize SDL 1 performance */
@@ -254,7 +263,9 @@ void SdlScreen::inputUpdate(int &mouseX,int &mouseY,int &mouseButtons,char &keyH
           break;
         case SDL_WINDOWEVENT_RESIZED:
           allocOutput(event.window.data1, event.window.data2);
+
           createSurface();
+
           break;
         }
         break;
@@ -320,28 +331,35 @@ void SdlScreen::inputUpdate(int &mouseX,int &mouseY,int &mouseButtons,char &keyH
 }
 
 void SdlScreen::show(void) { 
-  attempt(SDL_LockSurface(surface),"locking screen for output.");
+  uint8_t *pixels;
+  int pitch;
 
+  attempt(SDL_LockTexture(texture, NULL, (void **)&pixels, &pitch),
+          "locking SDL texture for output.");
+
+#if !SDL_VERSION_ATLEAST(2,0,0)
   if (depth == 32) {
     if (scaling == 1) {
+#endif
       uint16_t *in = (uint16_t*)output;
-      uint8_t *line = (uint8_t*)(surface->pixels);
+      uint8_t *line = pixels;
       for (int y = 0; y < outHeight; y++) {
         uint32_t *out = (uint32_t*)line;
         for (int x = 0; x < outWidth; x++) {
           *(out++) = colorlookup[*(in++)];
         }
-        line += surface->pitch;
+        line += pitch;
       }
+#if !SDL_VERSION_ATLEAST(2,0,0)
     } else {
       // scaling 2
       uint16_t *in = (uint16_t*)output;
-      uint8_t *line = (uint8_t*)(surface->pixels);
+      uint8_t *line = pixels;
       for(int y = 0; y < outHeight; y++) {
         uint32_t *lp1 = (uint32_t*)line;
-        line += surface->pitch;
+        line += pitch;
         uint32_t *lp2 = (uint32_t*)line;
-        line += surface->pitch;
+        line += pitch;
         for(int x = 0; x < outWidth; x++) {
           uint32_t v = colorlookup[*(in++)];
           *(lp1++) = v; *(lp1++) = v;
@@ -353,7 +371,7 @@ void SdlScreen::show(void) {
   if (scaling == 1) {
     uint32_t *ptr2 = (uint32_t*)output;
     int lines, linelen;
-    if (surface->pitch == outWidth) {
+    if (pitch == outWidth) {
       // Do everything at once
       lines = 1;
       linelen = outWidth*outHeight/sizeof(*ptr2);
@@ -364,8 +382,8 @@ void SdlScreen::show(void) {
     }
 
     for (int y = 0; y < lines; y++) {
-      uint32_t *ptr1 = (uint32_t*)( (uint8_t*)surface->pixels +
-                                    surface->pitch * y);
+      uint32_t *ptr1 = (uint32_t*)( pixels +
+                                    pitch * y);
       int i = linelen;
 
       do {
@@ -401,11 +419,10 @@ void SdlScreen::show(void) {
     }
   } else {
     // SDL has no standard image scaling routine (!)
-    uint8_t *pixels = (uint8_t*)(surface->pixels);
     for(int y=0;y<outHeight;y++) {
       uint32_t *p1 = (uint32_t*)(output+y*outWidth*2);
-      uint32_t *p2 = (uint32_t*)(pixels+y*2*surface->pitch);
-      uint32_t *p3 = (uint32_t*)(pixels+(y*2+1)*surface->pitch);
+      uint32_t *p2 = (uint32_t*)(pixels+y*2*pitch);
+      uint32_t *p3 = (uint32_t*)(pixels+(y*2+1)*pitch);
       for(int x=0;x<outWidth;x+=2) {
         uint32_t v = *(p1++);
         v = ((v&0x000000f0) >> 4)
@@ -418,15 +435,11 @@ void SdlScreen::show(void) {
       }
     }
   }
+#endif // !SDL_VERSION_ATLEAST(2,0,0)
 
-  SDL_UnlockSurface(surface);
-
-  //SDL_UpdateRect(surface, 0, 0, 0, 0);
-#if SDL_VERSION_ATLEAST(2,0,0)
-  SDL_UpdateWindowSurface(window);
-#else
-  SDL_Flip(surface);
-#endif
+  SDL_UnlockTexture(texture);
+  SDL_RenderCopy(renderer, texture, NULL, NULL);
+  SDL_RenderPresent(renderer);
 }
 
 int SdlScreen::getDepth() {
@@ -453,6 +466,16 @@ void SdlScreen::getPixelFormat(int *rshift, unsigned long *rmask,
                                int *gshift, unsigned long *gmask,
                                int *bshift, unsigned long *bmask,
                                int *ashift, unsigned long *amask) {
+  // FIXME actually get pixel format
+  *bshift = 0;
+  *bmask = 0xFF;
+  *gshift = 8;
+  *gmask = 0xFF00;
+  *rshift = 16;
+  *rmask = 0xFF0000;
+  *ashift = 24;
+  *amask = 0xFF000000;
+#if 0
   SDL_PixelFormat *fmt = surface->format;
   *rshift = getPixelShift(fmt->Rmask);
   *rmask = fmt->Rmask;
@@ -462,4 +485,5 @@ void SdlScreen::getPixelFormat(int *rshift, unsigned long *rmask,
   *bmask = fmt->Bmask;
   *ashift = getPixelShift(fmt->Amask);
   *amask = fmt->Amask;
+#endif
 }
