@@ -42,6 +42,7 @@ static SDL_Color sdlPalette[256];
 static SDL_Window *window;
 static SDL_Renderer *renderer;
 static SDL_Texture *texture;
+static Uint32 texture_format;
 static SDL_Palette sdl2Palette = { 256, sdlPalette };
 #endif
 static bool fullscreen;
@@ -57,10 +58,11 @@ static void sdlError(const char *str) {
 
 #if SDL_VERSION_ATLEAST(2,0,0)
 static void createSurface() {
-  texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
+  texture = SDL_CreateTexture(renderer, texture_format,
                               SDL_TEXTUREACCESS_STREAMING,
                               outWidth, outHeight);
   if (texture == NULL) sdlError("at SDL_CreateTexture");
+  SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_NONE);
 }
 #else // !SDL_VERSION_ATLEAST(2,0,0)
 static void createSurface() {
@@ -165,6 +167,21 @@ bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
 
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
   if (renderer == NULL) sdlError("at SDL_CreateRenderer");
+
+  SDL_RendererInfo ri;
+  int fi;
+  texture_format = SDL_PIXELFORMAT_ABGR8888;
+  /* Find a supported apporiate texture format, which should be faster */
+  if (SDL_GetRendererInfo(renderer, &ri) == 0) {
+    for (fi = 0; fi < ri.num_texture_formats; fi++) {
+      if (SDL_PIXELTYPE(ri.texture_formats[fi]) == SDL_PIXELTYPE_PACKED32 &&
+          SDL_PIXELLAYOUT(ri.texture_formats[fi]) == SDL_PACKEDLAYOUT_8888 &&
+          SDL_BYTESPERPIXEL(ri.texture_formats[fi]) == 4) {
+        texture_format = ri.texture_formats[fi];
+        break;
+      }
+    }
+  }
 
 #else
 #ifdef EMSCRIPTEN
@@ -466,24 +483,19 @@ void SdlScreen::getPixelFormat(int *rshift, unsigned long *rmask,
                                int *gshift, unsigned long *gmask,
                                int *bshift, unsigned long *bmask,
                                int *ashift, unsigned long *amask) {
-  // FIXME actually get pixel format
-  *bshift = 0;
-  *bmask = 0xFF;
-  *gshift = 8;
-  *gmask = 0xFF00;
-  *rshift = 16;
-  *rmask = 0xFF0000;
-  *ashift = 24;
-  *amask = 0xFF000000;
-#if 0
-  SDL_PixelFormat *fmt = surface->format;
-  *rshift = getPixelShift(fmt->Rmask);
-  *rmask = fmt->Rmask;
-  *gshift = getPixelShift(fmt->Gmask);
-  *gmask = fmt->Gmask;
-  *bshift = getPixelShift(fmt->Bmask);
-  *bmask = fmt->Bmask;
-  *ashift = getPixelShift(fmt->Amask);
-  *amask = fmt->Amask;
-#endif
+  int bpp;
+  Uint32 Rmask, Gmask, Bmask, Amask;
+  if (!SDL_PixelFormatEnumToMasks(texture_format, &bpp,
+                                  &Rmask, &Gmask, &Bmask, &Amask)) {
+    error("Can't get pixel format masks");
+  }
+
+  *rshift = getPixelShift(Rmask);
+  *rmask = Rmask;
+  *gshift = getPixelShift(Gmask);
+  *gmask = Gmask;
+  *bshift = getPixelShift(Bmask);
+  *bmask = Bmask;
+  *ashift = getPixelShift(Amask);
+  *amask = Amask;
 }
