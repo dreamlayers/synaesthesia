@@ -99,6 +99,7 @@ double fgRedSlider, fgGreenSlider, bgRedSlider, bgGreenSlider;
 static SoundSource soundSource;
 
 static int windX, windY, windWidth, windHeight;
+static int scaling;
 static char dspName[80];
 static char mixerName[80];
 static char cdromName[80];
@@ -150,6 +151,7 @@ bool loadConfig() {
   windY=30;
   windWidth = DefaultWidth;
   windHeight = DefaultHeight;
+  scaling = 1;
   strcpy(dspName, "/dev/dsp");
   strcpy(mixerName, "/dev/mixer");
   strcpy(cdromName, "/dev/cdrom");
@@ -169,6 +171,7 @@ bool loadConfig() {
       sscanf(line,"y %d",&windY);
       sscanf(line,"width %d",&windWidth);
       sscanf(line,"height %d",&windHeight);
+      sscanf(line,"scaling %d",&scaling);
       sscanf(line,"brightness %lf",&brightnessTwiddler);
       sscanf(line,"pointsize %lf",&starSize);
       sscanf(line,"fgred %lf",&fgRedSlider);
@@ -230,6 +233,7 @@ void saveConfig() {
     fprintf(f,"y %d\n",windY);
     fprintf(f,"width %d\n",outWidth);
     fprintf(f,"height %d\n",outHeight);
+    fprintf(f,"scaling %d\n",scaling);
 
     fprintf(f,"# Point style: either diamonds or stars\n");
     fprintf(f,"%s\n",pointsAreDiamonds ? "diamonds" : "stars");
@@ -306,6 +310,7 @@ int main(int argc, char **argv)
 	   "\nThe following optional flags may be used\n"
 	   "     --classic      use original Synaesthesia 2.4 algorithms\n"
 	   "     --fullscreen   try to take over the whole screen\n"
+	   "     --scaling n    render in lower resolution, scaling up n times\n"
 	   "     --width nnn    make the window this wide\n"
 	   "     --height nnn   make the window this high\n\n"
            "For more information, see http://logarithmic.net/pfh/Synaesthesia\n\n"
@@ -325,6 +330,14 @@ int main(int argc, char **argv)
     if (strcmp(argv[i],"--fullscreen") == 0) {
       fullscreen = true;
       chomp(argc,argv,i);
+    } else if (strcmp(argv[i],"--scaling") == 0) {
+      chomp(argc,argv,i);
+      scaling = atoi(argv[i]);
+      if (scaling < 1 || scaling > 10) {
+        warning("unsupported scaling, so scaling disabled");
+        scaling = 1;
+      }
+      // FIXME scaling could make window too small
     } else if (strcmp(argv[i],"--width") == 0) {
       chomp(argc,argv,i);
       windWidth = atoi(argv[i]);
@@ -428,7 +441,7 @@ int main(int argc, char **argv)
 
   screen = new SdlScreen;
   if (!screen->init(windX,windY,windWidth,windHeight,fullscreen,
-                    truecolor ? 32 : 8))
+                    truecolor ? 32 : 8, scaling))
     screen = 0;
 
   if (!screen)

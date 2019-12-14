@@ -107,7 +107,7 @@ void inline attemptNoDie(int x,const char *y,bool syscall=false) { if (x == -1) 
 #define SYN_DBL_CLICK (1 << 30)
 struct BaseScreen {
   virtual bool init(int xHint, int yHint, int widthHint, int heightHint,
-                    bool fullscreen, int depth = 8) = 0;
+                    bool fullscreen, int depth = 8, int scaleup = 1) = 0;
   virtual void setPalette(unsigned char *palette) = 0;
   virtual void end() = 0;
   virtual void inputUpdate(int &mouseX,int &mouseY,int &mouseButtons,char &keyHit) = 0;
@@ -122,7 +122,7 @@ struct BaseScreen {
 
 struct SdlScreen : public BaseScreen {
   bool init(int xHint, int yHint, int widthHint, int heightHint,
-            bool fullscreen, int depth);
+            bool fullscreen, int depth, int scaleup);
   void setPalette(unsigned char *palette);
   void end();
   void inputUpdate(int &mouseX,int &mouseY,int &mouseButtons,char &keyHit);

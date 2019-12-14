@@ -122,7 +122,7 @@ void SdlScreen::setPalette(unsigned char *palette) {
 }
 
 bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
-                     int bpp)
+                     int bpp, int scaleup)
 {
 #if !SDL_VERSION_ATLEAST(2,0,0)
   outWidth = width;
@@ -130,6 +130,7 @@ bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
 #endif
   ::fullscreen = fullscreen;
   depth = bpp;
+  ::scaling = scaleup;
 
   if (/* depth != 8 && FIXME SDL Texture */ depth != 32)
     return false;
@@ -150,7 +151,6 @@ bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
 #endif /* HAVE_ICON */
 
 #if SDL_VERSION_ATLEAST(2,0,0)
-  scaling = 1; // FIXME make this variable
   window = SDL_CreateWindow("Synaesthesia",
                             fullscreen ? SDL_WINDOWPOS_UNDEFINED : xHint,
                             fullscreen ? SDL_WINDOWPOS_UNDEFINED : yHint,
@@ -214,7 +214,6 @@ bool SdlScreen::init(int xHint,int yHint,int width,int height,bool fullscreen,
   SDL_EnableUNICODE(1);
 #endif
   SDL_ShowCursor(0);
-
   return true;
 }
 
