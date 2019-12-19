@@ -34,12 +34,22 @@ void setupMixer(double &loudness) {
 void setVolume(double loudness) {
 }
 
+static int pa_callback(const void *in, void *out,
+                       unsigned long frameCount,
+                       const PaStreamCallbackTimeInfo *timeInfo,
+                       PaStreamCallbackFlags statusFlags, void *userData) {
+    sndbuf_store((int16_t *)in, frameCount * 2);
+    return paContinue;
+}
+
 void openSound(SoundSource source, int inFrequency, char *dspName,
                char *mixerName) {
   PaError err;
 
   err = Pa_Initialize();
   if(err != paNoError) error("initializing PortAudio.");
+
+  sndbuf_init();
 
   PaStreamParameters inputParameters;
 
@@ -85,8 +95,8 @@ void openSound(SoundSource source, int inFrequency, char *dspName,
                       inFrequency,
                       NumSamples/2,
                       paClipOff,
-                      NULL, /* no callback, use blocking API */
-                      NULL); /* no callback, so no callback userData */
+                      pa_callback,
+                      NULL); /* no callback userData */
   if(err != paNoError) error("opening PortAudio stream");
 
   err = Pa_StartStream( stream );
@@ -108,23 +118,7 @@ void closeSound() {
   err = Pa_Terminate();
   if (err != paNoError) error("terminating PortAudio");
 
-  delete data;
-}
+  sndbuf_quit();
 
-int getNextFragment(void) {
-  PaError err;
-  /* Samples are read in blocks of NumSamples/2, and FFT is performed
-   * on the previous block with the current block appended. This
-   * doubles frame rate.
-   */
-  memcpy(&data[0],&data[NumSamples],NumSamples*2);
-  err = Pa_ReadStream(stream,&data[NumSamples],NumSamples/2);
-  if (err != paNoError) {
-    if (err == paInputOverflowed) {
-      warning("audio overrun, samples skipped");
-    } else {
-      error("reading from PortAudio stream");
-    }
-  }
-  return 0;
+  delete data;
 }

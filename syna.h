@@ -241,4 +241,6 @@ void closeSound();
 void setupMixer(double &loudness);
 void setVolume(double loudness);
 int getNextFragment(void);
-
+void sndbuf_init(void);
+void sndbuf_store(const sampleType *input, unsigned int len);
+void sndbuf_quit(void);

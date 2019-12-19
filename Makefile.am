@@ -50,7 +50,7 @@ synaesthesia_LDADD = $(AUDACIOUS_LIBS)
 endif
 
 if COMPILE_PORTAUDIO
-synaesthesia_SOURCES += pawrap.cc
+synaesthesia_SOURCES += pawrap.cc soundbuf.cc
 endif
 
 if COMPILE_EMSCRIPTEN
