@@ -6,5 +6,5 @@ Icon=synaesthesia
 Exec=synaesthesia
 Terminal=false
 Type=Application
-Categories=Audio;
+Categories=Audio;AudioVideo;
 StartupNotify=false
