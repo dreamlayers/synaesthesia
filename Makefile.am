@@ -18,7 +18,7 @@ synaesthesia_SOURCES += syn-res.rc
 synaesthesia_DEPENDENCIES = synaesthesia.ico
 
 .rc.o:
-	windres -o $@ $<
+	$(WINDRES) -o $@ $<
 
 syn-res.o: synaesthesia.ico
 

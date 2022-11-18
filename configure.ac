@@ -165,10 +165,12 @@ AC_CHECK_FILE([synaesthesia.png],
               [AS_IF([test "x$windows_host" = "xyes"],
                      [AC_CHECK_PROG([has_icotool],[icotool],[yes],[no])
                       AS_IF([test "x$has_icotool" = "xyes"],
-                            [AC_CHECK_PROG([windows_icon],[windres],[yes],[no])],
-                            [windows_icon=no])
-                      AS_IF([test "x$windows_icon" != "xyes"],
-                            [AC_MSG_WARN([Icon found but need icotool from icoutils and windres to use it])])],
+                            [AC_CHECK_TOOL([WINDRES], [windres], [:])],
+                            [WINDRES=:])
+                      AS_IF([test "x$WINDRES" = "x:"],
+                            [windows_icon=no
+                             AC_MSG_WARN([Icon found but need icotool from icoutils and windres to use it])],
+                            [windows_icon=yes])],
                       [windows_icon=0])
                AS_IF([test "x$enable_emscripten" = "xyes"], [sdl_icon=no],
                      [test "x$windows_host" = "xyes" -a "x$with_sdl2" != "xno"], [sdl_icon=no],
