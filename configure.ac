@@ -1,4 +1,4 @@
-AC_INIT([synaesthesia], [2.4])
+AC_INIT([synaesthesia],[2.4])
 AC_CONFIG_SRCDIR([main.cc])
 AM_INIT_AUTOMAKE
 
@@ -12,8 +12,7 @@ AS_IF([test "x$enable_emscripten" = "xyes"],
 
 AC_ARG_ENABLE(
   [emscripten],
-  [AC_HELP_STRING([--enable-emscripten=@<:@no/yes@:>@],
-                  [compile to JavaScript using Emscripten])])
+  [AS_HELP_STRING([--enable-emscripten=@<:@no/yes@:>@],[compile to JavaScript using Emscripten])])
 
 dnl AC_CANONICAL_HOST fails to detect Emscripten.
 dnl This contains kludges to make things work.
@@ -25,13 +24,11 @@ AM_CONDITIONAL([COMPILE_EMSCRIPTEN], [test "x$enable_emscripten" = "xyes"])
 
 AC_ARG_ENABLE(
   [winamp],
-  [AC_HELP_STRING([--enable-winamp=@<:@no/yes@:>@],
-                  [compile Winamp visualization plugin])])
+  [AS_HELP_STRING([--enable-winamp=@<:@no/yes@:>@],[compile Winamp visualization plugin])])
 
 AC_ARG_ENABLE(
   [audacious],
-  [AC_HELP_STRING([--enable-audacious=@<:@no/yes@:>@],
-                  [compile Audacious visualization plugin])])
+  [AS_HELP_STRING([--enable-audacious=@<:@no/yes@:>@],[compile Audacious visualization plugin])])
 
 dnl Detect the canonical host system
 AC_CANONICAL_HOST
@@ -59,7 +56,7 @@ AS_CASE([$host_os],
             cd_player="yes"])]
 )
 
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS(config.h)
 
 : ${CXXFLAGS="$default_cflags"}
 : ${CFLAGS="$default_cflags"}
@@ -130,8 +127,7 @@ dnl Check for esound
 AC_CHECK_LIB(esd,esd_record_stream_fallback)
 
 dnl Check for SDL
-AC_ARG_WITH(sdl2, [AC_HELP_STRING([--with-sdl2=@<:@no/yes@:>@],
-                  [Build using SDL 2 instead of SDL 1.2.])],
+AC_ARG_WITH(sdl2, [AS_HELP_STRING([--with-sdl2=@<:@no/yes@:>@],[Build using SDL 2 instead of SDL 1.2.])],
                   [], [with_sdl2=no])
 dnl pkg-config SDL 2 detection would not work with Emscripten
 AS_IF([test "x$enable_emscripten" = "xyes"],
@@ -150,6 +146,8 @@ AS_IF([test "x$enable_emscripten" = "xyes"],
                     [PKG_CHECK_MODULES([SDL], [sdl2], [enable_sdl=1], [enable_sdl=0])])])
        dnl Windows SDL does not ship with pkg-config .pc file.
        dnl Builds can still fail when static linking in Windows.
+       dnl AM_PATH_SDL uses obsolete macros, but SDL 1 is obsolete too.
+       dnl If problems occur in the future, this section can be removed.
        AS_IF([test "x$enable_sdl" != "x1"],
              [AS_IF([test "x$with_sdl2" = "xno"],
                     [AM_PATH_SDL([1.2.0], [enable_sdl=1], [enable_sdl=0])])])
@@ -186,4 +184,5 @@ AC_CHECK_FILE([synaesthesia.png],
 AM_CONDITIONAL([COMPILE_WINICON], [test "x$windows_icon" = "xyes"])
 AM_CONDITIONAL([COMPILE_SDLICON], [test "x$sdl_icon" = "xyes"])
 
-AC_OUTPUT(Makefile)
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
