@@ -36,8 +36,8 @@
 #define WIN32_LEAN_AND_MEAN
 #define __W32API_USE_DLLIMPORT__
 #include <windows.h>
-#include <Shlobj.h>
-#include <Shlwapi.h>
+#include <shlobj.h>
+#include <shlwapi.h>
 #endif
 #include <string.h>
 #include <SDL_main.h>
