@@ -64,7 +64,7 @@ unsigned int hdrQueueTail;
 /* This function is only allowed to call a few functions.
  * See documentation for waveInProc.
  */
-void CALLBACK SoundCallback(HWAVEIN lhwi, UINT uMsg, DWORD dwInstance, DWORD dwParam1, DWORD dwParam2)
+void CALLBACK SoundCallback(HWAVEIN lhwi, UINT uMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2)
 {
   MMRESULT result;
 
@@ -109,8 +109,8 @@ void openSound(SoundSource source, int inFrequency, char *dspName,
   }
 */
 
-//  MMRESULT result = waveInOpen(&hwi, WAVE_MAPPER, &format, (DWORD) &SoundCallback, NULL, CALLBACK_FUNCTION);
-  MMRESULT result = waveInOpen(&hwi, 0, &format, (DWORD) &SoundCallback, NULL, CALLBACK_FUNCTION);
+//  MMRESULT result = waveInOpen(&hwi, WAVE_MAPPER, &format, (DWORD_PTR) &SoundCallback, NULL, CALLBACK_FUNCTION);
+  MMRESULT result = waveInOpen(&hwi, 0, &format, (DWORD_PTR) &SoundCallback, NULL, CALLBACK_FUNCTION);
   if(result != MMSYSERR_NOERROR)
   {
 	if(result == MMSYSERR_ALLOCATED)
@@ -374,7 +374,7 @@ void cdOpen(char* cdromName)
   openstruct.lpstrElementName = NULL;
   openstruct.lpstrAlias = NULL;
 
-  retval = mciSendCommand(cd_device,MCI_OPEN,MCI_WAIT|MCI_OPEN_TYPE|MCI_OPEN_TYPE_ID|MCI_OPEN_SHAREABLE,(DWORD)&openstruct);
+  retval = mciSendCommand(cd_device,MCI_OPEN,MCI_WAIT|MCI_OPEN_TYPE|MCI_OPEN_TYPE_ID|MCI_OPEN_SHAREABLE,(DWORD_PTR)&openstruct);
   if(retval)
   {
     char errorstr[256];
@@ -390,7 +390,7 @@ void cdOpen(char* cdromName)
   MCI_SET_PARMS mciSetParms;
   mciSetParms.dwTimeFormat = MCI_FORMAT_MSF;
   
-  retval = mciSendCommand(cd_device,MCI_SET,MCI_WAIT|MCI_SET_TIME_FORMAT,(DWORD)(LPVOID) &mciSetParms);
+  retval = mciSendCommand(cd_device,MCI_SET,MCI_WAIT|MCI_SET_TIME_FORMAT,(DWORD_PTR)(LPVOID) &mciSetParms);
   if(retval)
   {
     char errorstr[256];
@@ -409,7 +409,7 @@ void cdClose(void)
 
   bugfixed_pause = false;
 
-  retval = mciSendCommand(cd_device,MCI_CLOSE,MCI_WAIT,(DWORD)&closestruct);
+  retval = mciSendCommand(cd_device,MCI_CLOSE,MCI_WAIT,(DWORD_PTR)&closestruct);
   if(retval)
   {
     char errorstr[256];
@@ -433,7 +433,7 @@ void getTrackInfo(void)
 	trackCount  = 0;
 
 	parms.dwItem = MCI_STATUS_NUMBER_OF_TRACKS;
-	retval = mciSendCommand(cd_device,MCI_STATUS,MCI_WAIT|MCI_STATUS_ITEM,(DWORD)&parms);
+	retval = mciSendCommand(cd_device,MCI_STATUS,MCI_WAIT|MCI_STATUS_ITEM,(DWORD_PTR)&parms);
 	if(retval)
 	{
 		char errorstr[256];
@@ -452,7 +452,7 @@ void getTrackInfo(void)
 
 	parms.dwItem = MCI_STATUS_POSITION;
 	parms.dwTrack = trackCount;
-	retval = mciSendCommand(cd_device,MCI_STATUS,MCI_WAIT|MCI_TRACK|MCI_STATUS_ITEM,(DWORD)&parms);
+	retval = mciSendCommand(cd_device,MCI_STATUS,MCI_WAIT|MCI_TRACK|MCI_STATUS_ITEM,(DWORD_PTR)&parms);
 	if(retval)
 	{
 		char errorstr[256];
@@ -465,7 +465,7 @@ void getTrackInfo(void)
 
 	parms.dwItem = MCI_STATUS_LENGTH;
 	parms.dwTrack = trackCount;
-	retval = mciSendCommand(cd_device,MCI_STATUS,MCI_WAIT|MCI_TRACK|MCI_STATUS_ITEM,(DWORD)&parms);
+	retval = mciSendCommand(cd_device,MCI_STATUS,MCI_WAIT|MCI_TRACK|MCI_STATUS_ITEM,(DWORD_PTR)&parms);
 	if(retval)
 	{
 		char errorstr[256];
@@ -483,7 +483,7 @@ void getTrackInfo(void)
 		// determine if track is a data or audio track
 		parms.dwItem = MCI_CDA_STATUS_TYPE_TRACK;
 		parms.dwTrack = i+1;
-		retval = mciSendCommand(cd_device,MCI_STATUS,MCI_WAIT|MCI_STATUS_ITEM|MCI_TRACK,(DWORD)&parms);
+		retval = mciSendCommand(cd_device,MCI_STATUS,MCI_WAIT|MCI_STATUS_ITEM|MCI_TRACK,(DWORD_PTR)&parms);
 		if(retval)
 		{
 			char errorstr[256];
@@ -503,7 +503,7 @@ void getTrackInfo(void)
 			// get start position
 			parms.dwItem = MCI_STATUS_POSITION;
 			parms.dwTrack = i+1;
-			retval = mciSendCommand(cd_device,MCI_STATUS,MCI_WAIT|MCI_TRACK|MCI_STATUS_ITEM,(DWORD)&parms);
+			retval = mciSendCommand(cd_device,MCI_STATUS,MCI_WAIT|MCI_TRACK|MCI_STATUS_ITEM,(DWORD_PTR)&parms);
 			if(retval)
 			{
 				char errorstr[256];
@@ -557,7 +557,7 @@ void cdPlay(int frame, int endFrame)
   parms.dwCallback = NULL;
   parms.dwFrom = SynMSFtoWinMSF(frame);
   parms.dwTo = SynMSFtoWinMSF(endFrame);
-  retval = mciSendCommand(cd_device,MCI_PLAY,MCI_NOTIFY|MCI_FROM|MCI_TO,(DWORD)&parms);
+  retval = mciSendCommand(cd_device,MCI_PLAY,MCI_NOTIFY|MCI_FROM|MCI_TO,(DWORD_PTR)&parms);
   if(retval)
   {
     char errorstr[256];
@@ -576,7 +576,7 @@ void cdGetStatus(int &track, int &frames, SymbolID &state)
 	MCIERROR retval;  
 	
 	parms.dwItem = MCI_STATUS_MODE;
-	retval = mciSendCommand(cd_device,MCI_STATUS,MCI_WAIT|MCI_STATUS_ITEM,(DWORD)&parms);
+	retval = mciSendCommand(cd_device,MCI_STATUS,MCI_WAIT|MCI_STATUS_ITEM,(DWORD_PTR)&parms);
 	if(retval)
 	{
 		char errorstr[256];
@@ -623,7 +623,7 @@ void cdGetStatus(int &track, int &frames, SymbolID &state)
 	}
 
 	parms.dwItem = MCI_STATUS_CURRENT_TRACK;
-	retval = mciSendCommand(cd_device,MCI_STATUS,MCI_WAIT|MCI_STATUS_ITEM,(DWORD)&parms);
+	retval = mciSendCommand(cd_device,MCI_STATUS,MCI_WAIT|MCI_STATUS_ITEM,(DWORD_PTR)&parms);
 	if(retval)
 	{
 		char errorstr[256];
@@ -636,7 +636,7 @@ void cdGetStatus(int &track, int &frames, SymbolID &state)
 	track = parms.dwReturn;
 
 	parms.dwItem = MCI_STATUS_POSITION;
-	retval = mciSendCommand(cd_device,MCI_STATUS,MCI_WAIT|MCI_STATUS_ITEM,(DWORD)&parms);
+	retval = mciSendCommand(cd_device,MCI_STATUS,MCI_WAIT|MCI_STATUS_ITEM,(DWORD_PTR)&parms);
 	if(retval)
 	{
 		char errorstr[256];
@@ -670,7 +670,7 @@ void cdStop(void)
 
   bugfixed_pause = false;
   
-  MCIERROR retval = mciSendCommand(cd_device,MCI_STOP,MCI_WAIT,(DWORD)&parms);
+  MCIERROR retval = mciSendCommand(cd_device,MCI_STOP,MCI_WAIT,(DWORD_PTR)&parms);
   if(retval)
   {
     char errorstr[256];
@@ -689,7 +689,7 @@ void cdPause()
 	position.
 
 	MCI_GENERIC_PARMS parms;
-	MCIERROR retval = mciSendCommand(cd_device,MCI_PAUSE,MCI_WAIT,(DWORD)&parms);
+	MCIERROR retval = mciSendCommand(cd_device,MCI_PAUSE,MCI_WAIT,(DWORD_PTR)&parms);
 	if(retval)
 	{
 		char errorstr[256];
@@ -704,7 +704,7 @@ void cdPause()
 	MCIERROR retval;
 
 	parms.dwItem = MCI_STATUS_POSITION;
-	retval = mciSendCommand(cd_device,MCI_STATUS,MCI_WAIT|MCI_STATUS_ITEM,(DWORD)&parms);
+	retval = mciSendCommand(cd_device,MCI_STATUS,MCI_WAIT|MCI_STATUS_ITEM,(DWORD_PTR)&parms);
 	if(retval)
 	{
 		char errorstr[256];
@@ -725,7 +725,7 @@ void cdResume()
 /* resume and pause are not supported by the standard MCICDA devices in Windows.
 
 	MCI_GENERIC_PARMS parms;
-	MCIERROR retval = mciSendCommand(cd_device,MCI_RESUME,MCI_WAIT,(DWORD)&parms);
+	MCIERROR retval = mciSendCommand(cd_device,MCI_RESUME,MCI_WAIT,(DWORD_PTR)&parms);
 	if(retval)
 	{
 		char errorstr[256];
@@ -752,7 +752,7 @@ void cdResume()
 void cdEject()
 {
   MCI_SET_PARMS parms;
-  MCIERROR retval = mciSendCommand(cd_device,MCI_SET,MCI_WAIT|MCI_SET_DOOR_OPEN,(DWORD)&parms);
+  MCIERROR retval = mciSendCommand(cd_device,MCI_SET,MCI_WAIT|MCI_SET_DOOR_OPEN,(DWORD_PTR)&parms);
   if(retval)
   {
     char errorstr[256];
@@ -768,7 +768,7 @@ void cdEject()
 void cdCloseTray()
 {
   MCI_SET_PARMS parms;
-  MCIERROR retval = mciSendCommand(cd_device,MCI_SET,MCI_WAIT|MCI_SET_DOOR_CLOSED,(DWORD)&parms);
+  MCIERROR retval = mciSendCommand(cd_device,MCI_SET,MCI_WAIT|MCI_SET_DOOR_CLOSED,(DWORD_PTR)&parms);
   if(retval)
   {
     char errorstr[256];
