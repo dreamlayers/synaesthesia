@@ -144,10 +144,8 @@ AS_IF([test "x$enable_emscripten" = "xyes"],
              [AS_IF([test "x$with_sdl2" = "xno"],
                     [PKG_CHECK_MODULES([SDL], [sdl], [enable_sdl=1], [enable_sdl=0])],
                     [PKG_CHECK_MODULES([SDL], [sdl2], [enable_sdl=1], [enable_sdl=0])])])
-       dnl Windows SDL does not ship with pkg-config .pc file.
+       dnl Old Windows SDL 1 does not ship with pkg-config .pc file.
        dnl Builds can still fail when static linking in Windows.
-       dnl AM_PATH_SDL uses obsolete macros, but SDL 1 is obsolete too.
-       dnl If problems occur in the future, this section can be removed.
        AS_IF([test "x$enable_sdl" != "x1"],
              [AS_IF([test "x$with_sdl2" = "xno"],
                     [AM_PATH_SDL([1.2.0], [enable_sdl=1], [enable_sdl=0])])])
