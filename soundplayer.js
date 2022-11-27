@@ -26,7 +26,7 @@
  * instead of decompressing whole track into memory.
  */
 
-var context = new (window.AudioContext || window.webkitAudioContext)();
+var context;
 var audio;
 var source;
 var processor;
@@ -44,6 +44,9 @@ function initSyn() {
 }
 
 function initAudio(data) {
+    if (!context) {
+      context = new (window.AudioContext || window.webkitAudioContext)();
+    }
     if (!audio) {
       initSyn();
       audio = new Audio();
