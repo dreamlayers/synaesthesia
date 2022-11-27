@@ -224,7 +224,7 @@ void fadeFade() {
     203,204,205,206,207,208,209,210,211,212,213,213,214,215,216,217,
     218,219,220,221,222,223,223,224,225,226,227,228,229,230,231,232
   };
-  register uint8_t *ptr = (uint8_t*)output;
+  uint8_t *ptr = (uint8_t*)output;
   int i = outWidth*outHeight*2;
   do {
     uint8_t x = *ptr;

@@ -317,7 +317,7 @@ void SdlScreen::show(void) {
         uint32_t *lp2 = (uint32_t*)line;
         line += surface->pitch;
         for(int x = 0; x < outWidth; x++) {
-          register uint32_t v = colorlookup[*(in++)];
+          uint32_t v = colorlookup[*(in++)];
           *(lp1++) = v; *(lp1++) = v;
           *(lp2++) = v; *(lp2++) = v;
         } // for each pixel in line
@@ -325,7 +325,7 @@ void SdlScreen::show(void) {
     } // scaling 2
   } else
   if (scaling == 1) {
-    register uint32_t *ptr2 = (uint32_t*)output;
+    uint32_t *ptr2 = (uint32_t*)output;
     int lines, linelen;
     if (surface->pitch == outWidth) {
       // Do everything at once
@@ -345,11 +345,11 @@ void SdlScreen::show(void) {
       do {
         // Asger Alstrup Nielsen's (alstrup@diku.dk)
         // optimized 32 bit screen loop
-        register unsigned int const r1 = *(ptr2++);
-        register unsigned int const r2 = *(ptr2++);
+        unsigned int const r1 = *(ptr2++);
+        unsigned int const r2 = *(ptr2++);
 
   #ifdef LITTLEENDIAN
-        register unsigned int const v = 
+        unsigned int const v =
             ((r1 & 0x000000f0ul) >> 4)
           | ((r1 & 0x0000f000ul) >> 8)
           | ((r1 & 0x00f00000ul) >> 12)
@@ -360,7 +360,7 @@ void SdlScreen::show(void) {
           | ((r2 & 0x00f00000ul) << 4)
           | ((r2 & 0xf0000000ul)));
   #else
-        register unsigned int const v = 
+        unsigned int const v =
             ((r2 & 0x000000f0ul) >> 4)
           | ((r2 & 0x0000f000ul) >> 8)
           | ((r2 & 0x00f00000ul) >> 12)
