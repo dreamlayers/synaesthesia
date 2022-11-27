@@ -2,22 +2,19 @@ AC_INIT([synaesthesia],[2.4])
 AC_CONFIG_SRCDIR([main.cc])
 AM_INIT_AUTOMAKE
 
-dnl Check for Emscripten
-AS_CASE([$CXX],
-        [*em++], [enable_emscripten="yes"],
-        [enable_emscripten="no"])
-
-AS_IF([test "x$enable_emscripten" = "xyes"],
-      [AC_MSG_NOTICE([auto-detected use of Emscripten])])
-
 AC_ARG_ENABLE(
   [emscripten],
-  [AS_HELP_STRING([--enable-emscripten=@<:@no/yes@:>@],[compile to JavaScript using Emscripten])])
+  [AS_HELP_STRING([--enable-emscripten=@<:@no/yes@:>@],[compile to JavaScript using Emscripten])],,
+  [AS_CASE([$CXX],
+           [*em++], [enable_emscripten="yes"
+                    AC_MSG_NOTICE([auto-detected use of Emscripten])],
+           [enable_emscripten="no"])])
 
 dnl AC_CANONICAL_HOST fails to detect Emscripten.
 dnl This contains kludges to make things work.
 AS_IF([test "x$enable_emscripten" = "xyes"],
-      [host_alias=none
+      [AS_IF([test "x$CXX" = "x"], [CXX=em++])
+       host_alias=none
        ac_cv_exeext=.html])
 
 AM_CONDITIONAL([COMPILE_EMSCRIPTEN], [test "x$enable_emscripten" = "xyes"])
