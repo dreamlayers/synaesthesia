@@ -48,7 +48,7 @@ static int scaling; //currently only supports 1, 2
 static int depth; // bits per pixel
 uint32_t *colorlookup; // pallette for 32bpp
 
-static void sdlError(const char *str) {
+void sdlError(const char *str) {
   fprintf(stderr, "synaesthesia: Error %s\n", str);
   fprintf(stderr,"(reason for error: %s)\n", SDL_GetError());
   exit(1);

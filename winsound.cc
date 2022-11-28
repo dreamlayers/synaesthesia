@@ -39,7 +39,7 @@
 
 /* Sound Recording ================================================= */
 
-#ifndef HAVE_PORTAUDIO
+#if !defined(HAVE_PORTAUDIO) && !defined(HAVE_SDLAUDIO)
 
 #define NUMBUFFERS 5
 
@@ -318,7 +318,7 @@ void setVolume(double loudness) {
 #endif  
 }
 
-#endif /* !defined(HAVE_PORTAUDIO) */
+#endif /* !defined(HAVE_PORTAUDIO) && !defined(HAVE_SDLAUDIO) */
 
 /* CDROM stuff ============================================== */
 

@@ -86,7 +86,7 @@ typedef short sampleType;
 #endif
 #endif /* !defined(BIGENDIAN) && !defined(LITTLEENDIAN) */
 
-#if !defined(HAVE_PORTAUDIO) && !defined(WIN32)
+#if !defined(HAVE_PORTAUDIO) && !defined(WIN32) && !defined(HAVE_SDLAUDIO)
 #define HAVE_PLAYBACK
 #endif
 
@@ -244,3 +244,4 @@ int getNextFragment(void);
 void sndbuf_init(void);
 void sndbuf_store(const sampleType *input, unsigned int len);
 void sndbuf_quit(void);
+void sdlError(const char *str);

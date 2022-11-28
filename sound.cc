@@ -306,7 +306,7 @@ void cdCloseTray(void) {
 
 /* Sound Recording ================================================= */
 
-#ifndef HAVE_PORTAUDIO
+#if !defined(HAVE_PORTAUDIO) && !defined(HAVE_SDLAUDIO)
 
 #ifdef LITTLEENDIAN
 #define SOUNDFORMAT AFMT_S16_LE
@@ -604,4 +604,4 @@ int getNextFragment(void) {
   return end && eat <= 0 ? -1 : 0;
 }
 
-#endif /* !defined(HAVE_PORTAUDIO) */
+#endif /* !defined(HAVE_PORTAUDIO) && !defined(HAVE_SDLAUDIO) */

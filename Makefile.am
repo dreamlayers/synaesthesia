@@ -10,6 +10,10 @@ if COMPILE_WINSOUND
 synaesthesia_SOURCES += winsound.cc
 endif
 
+if COMPILE_SDLAUDIO
+synaesthesia_SOURCES += sdlaudio.cc soundbuf.cc
+endif
+
 if COMPILE_WINDOWS
 synaesthesia_LDFLAGS = -static
 

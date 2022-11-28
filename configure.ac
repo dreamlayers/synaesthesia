@@ -154,6 +154,17 @@ AS_IF([test "x$enable_emscripten" = "xyes"],
               LIBS="$LIBS $SDL_LIBS"],
              [AC_MSG_FAILURE([SDL is required for graphical output and user interface])])])
 
+dnl Possibility to use SDL 2 instead of native sound
+AH_TEMPLATE([HAVE_SDLAUDIO], [Set to 1 if SDL 2 audio is used.])
+AC_ARG_ENABLE(
+  [sdlaudio],
+  [AS_HELP_STRING([--enable-sdlaudio=@<:@no/yes@:>@],[use SDL 2 audio])])
+AS_IF([test "x$enable_sdlaudio" = "xyes"],
+      [AS_IF([test "x$enable_sdl" != "x1" -o "x$with_sdl2" != "xyes"],
+             [AC_MSG_FAILURE([SDL audio was enabled, but SDL 2 is not being used])])
+       AC_DEFINE([HAVE_SDLAUDIO], [1])])
+AM_CONDITIONAL([COMPILE_SDLAUDIO], [test "x$enable_sdlaudio" = "xyes"])
+
 dnl Use icon if present
 AH_TEMPLATE([HAVE_ICON], [Set to 1 if window icon is compiled in and set by code.])
 AC_CHECK_FILE([synaesthesia.png],
