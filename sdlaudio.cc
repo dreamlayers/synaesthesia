@@ -40,11 +40,11 @@ static void audioCallback(void *userdata, Uint8 * stream, int len) {
 }
 
 void openSound(SoundSource source, int inFrequency, char *dspName,
-               char *mixerName) {
+               char *mixerName, unsigned int chunk_size) {
   if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0)
     sdlError("initializing SDL audio");
 
-  sndbuf_init();
+  sndbuf_init(chunk_size * 2);
 
   SDL_AudioSpec desired, obtained;
   memset(&desired, 0, sizeof(desired));
@@ -55,8 +55,7 @@ void openSound(SoundSource source, int inFrequency, char *dspName,
   desired.format = AUDIO_S16MSB;
 #endif
   desired.channels = 2;
-  /* This counts samples in both channels */
-  desired.samples = NumSamples / 2;
+  desired.samples = chunk_size;
   desired.callback = audioCallback;
 
   id = SDL_OpenAudioDevice(NULL, 1, &desired, &obtained, 0);

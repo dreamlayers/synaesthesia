@@ -105,6 +105,9 @@ static char cdromName[80];
 #ifdef MONITOR_NAME
 static char monitorName[80];
 #endif
+#ifdef HAVE_FPS
+static int fps;
+#endif
 
 void setStateToDefaults() {
   fadeMode = Stars;
@@ -156,6 +159,9 @@ bool loadConfig() {
 #ifdef MONITOR_NAME
   strcpy(monitorName, MONITOR_NAME);
 #endif
+#ifdef HAVE_FPS
+  fps = 0;
+#endif
 
   char *fileName = getConfigFileName();
   if (fileName == NULL) return false;
@@ -181,6 +187,9 @@ bool loadConfig() {
       sscanf(line,"cdrom %[^\r\n]",cdromName);
 #ifdef MONITOR_NAME
       sscanf(line,"monitor %[^\r\n]",monitorName);
+#endif
+#ifdef HAVE_FPS
+      sscanf(line,"fps %d",&fps);
 #endif
       if (strncmp(line,"fade",4) == 0) fadeMode = Stars;
       if (strncmp(line,"wave",4) == 0) fadeMode = Wave;
@@ -248,6 +257,9 @@ void saveConfig() {
     fprintf(f,"cdrom %s\n",cdromName);
 #ifdef MONITOR_NAME
     fprintf(f,"monitor %s\n",monitorName);
+#endif
+#ifdef HAVE_FPS
+    fprintf(f,"fps %d\n",fps);
 #endif
     fclose(f);
   } else {
@@ -338,6 +350,14 @@ int main(int argc, char **argv)
       if (windHeight < 1)
         windHeight = DefaultHeight;
       chomp(argc,argv,i);
+#ifdef HAVE_FPS
+    } else if (strcmp(argv[i],"--fps") == 0) {
+      chomp(argc,argv,i);
+      fps = atoi(argv[i]);
+      if (fps < 0)
+        fps = 0;
+      chomp(argc,argv,i);
+#endif
     } else if (strcmp(argv[i],"--classic") == 0) {
       logfreq = false;
       hamming = false;
@@ -405,11 +425,25 @@ int main(int argc, char **argv)
     soundSource = SourceLine;
 #endif
 
+#ifdef HAVE_FPS
+  int chunk_size;
+  if (fps <= 0) {
+    chunk_size = NumSamples / 2;
+  } else {
+    chunk_size = inFrequency / fps;
+    if (chunk_size < 1) chunk_size = 1;
+  }
+#endif
+
   openSound(soundSource, inFrequency,
 #ifdef MONITOR_NAME
             (soundSource == SourceMonitor) ? monitorName :
 #endif
-            dspName, mixerName);
+            dspName, mixerName
+#ifdef HAVE_FPS
+            , chunk_size
+#endif
+            );
   
   setupMixer(volume);
 

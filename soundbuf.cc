@@ -27,7 +27,6 @@
 
 #define WITH_SDL
 #define RING_SIZE (NumSamples*2)
-#define MIN_NEW_SAMPLES (RING_SIZE/2)
 /* #define CONVERT_SAMPLES(x) ((x) / 32768.0) */
 #undef CONVERT_SAMPLES
 typedef int16_t sndbufInType;
@@ -53,6 +52,7 @@ static pthread_mutex_t mutex;
 static pthread_cond_t cond;
 #endif
 static int signalled = 0;
+static unsigned int min_new = 0;
 
 /* Number of samples put into ring buffer since last sound_retrieve() call is
  * counted by ring_has. If visualizer is slower than input, ring_has could be
@@ -60,8 +60,9 @@ static int signalled = 0;
  */
 static unsigned int ring_has = 0;
 
-void sndbuf_init(void)
+void sndbuf_init(unsigned int min_new_samples)
 {
+    min_new = min_new_samples;
 #ifdef WITH_SDL
     mutex = SDL_CreateMutex();
     if (mutex == NULL) error("creating SDL_mutex for sound buffer");
@@ -163,7 +164,7 @@ void sndbuf_store(const int16_t *input, unsigned int len)
     /* This could theoretically overflow, but is needed for timing */
     ring_has += len;
 
-    if (ring_has >= MIN_NEW_SAMPLES && !signalled) {
+    if (ring_has >= min_new && !signalled) {
         /* Next buffer is full */
         signalled = 1;
 #ifdef WITH_SDL

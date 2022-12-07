@@ -43,13 +43,13 @@ static int pa_callback(const void *in, void *out,
 }
 
 void openSound(SoundSource source, int inFrequency, char *dspName,
-               char *mixerName) {
+               char *mixerName, unsigned int chunk_size) {
   PaError err;
 
   err = Pa_Initialize();
   if(err != paNoError) error("initializing PortAudio.");
 
-  sndbuf_init();
+  sndbuf_init(chunk_size * 2);
 
   PaStreamParameters inputParameters;
 
@@ -93,7 +93,7 @@ void openSound(SoundSource source, int inFrequency, char *dspName,
                       &inputParameters,
                       NULL, //&outputParameters,
                       inFrequency,
-                      NumSamples/2,
+                      chunk_size,
                       paClipOff,
                       pa_callback,
                       NULL); /* no callback userData */

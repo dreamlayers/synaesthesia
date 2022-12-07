@@ -98,6 +98,10 @@ typedef short sampleType;
 #endif
 #endif /* HAVE_PORTAUDIO */
 
+#if defined(HAVE_PORTAUDIO) || defined(HAVE_SDLAUDIO)
+#define HAVE_FPS
+#endif
+
 void error(const char *str,bool syscall=false);
 void inline attempt(int x,const char *y,bool syscall=false) { if (x == -1) error(y,syscall); }
 void warning(const char *str,bool syscall=false);
@@ -236,12 +240,16 @@ void cdCloseTray(void);
 int cdGetTrackCount(void);
 int cdGetTrackFrame(int track);
 #endif /* HAVE_CD_PLAYER */
-void openSound(SoundSource sound, int downFactor, char *dspName, char *mixerName);
+void openSound(SoundSource sound, int downFactor, char *dspName, char *mixerName
+#ifdef HAVE_FPS
+               , unsigned int chunk_size
+#endif
+               );
 void closeSound();
 void setupMixer(double &loudness);
 void setVolume(double loudness);
 int getNextFragment(void);
-void sndbuf_init(void);
+void sndbuf_init(unsigned int min_new_samples);
 void sndbuf_store(const sampleType *input, unsigned int len);
 void sndbuf_quit(void);
 void sdlError(const char *str);
